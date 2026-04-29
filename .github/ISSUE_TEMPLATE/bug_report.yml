@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible Solane AI issue.
+description: Report a reproducible SOLANE API issue.
 title: "[Bug]: "
 labels: ["bug"]
 body:

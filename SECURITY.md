@@ -1,6 +1,6 @@
 # Security Policy
 
-Solane AI is a public-facing Discord client for Solane Run. The repository is
+SOLANE API is a public-facing Discord client for Solane Run. The repository is
 safe to publish because it does not contain Discord tokens, API secrets, private
 ESI credentials or pricing formulas.
 

@@ -1,4 +1,4 @@
-"""Solane AI Discord bot."""
+"""SOLANE API Discord bot."""
 
 __version__ = "0.1.0"
 

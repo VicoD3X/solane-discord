@@ -33,7 +33,7 @@ class SolaneAIBot(discord.Client):
         await super().close()
 
     async def on_ready(self) -> None:
-        LOGGER.info("Solane AI connected as %s (%s)", self.user, self.user.id if self.user else "unknown")
+        LOGGER.info("SOLANE API connected as %s (%s)", self.user, self.user.id if self.user else "unknown")
 
     async def _poll_forever(self) -> None:
         await self.wait_until_ready()
@@ -41,7 +41,7 @@ class SolaneAIBot(discord.Client):
             try:
                 await self.publish_once()
             except Exception:
-                LOGGER.exception("Solane AI publish cycle failed")
+                LOGGER.exception("SOLANE API publish cycle failed")
             await asyncio.sleep(self.settings.poll_seconds)
 
     async def publish_once(self) -> None:
@@ -86,10 +86,10 @@ class SolaneAIBot(discord.Client):
 
         if message is None:
             message = await channel.send(embed=panel.embed)
-            LOGGER.info("Created Solane AI panel %s in channel %s", panel.key, channel_id)
+            LOGGER.info("Created SOLANE API panel %s in channel %s", panel.key, channel_id)
         else:
             await message.edit(embed=panel.embed)
-            LOGGER.info("Updated Solane AI panel %s", panel.key)
+            LOGGER.info("Updated SOLANE API panel %s", panel.key)
 
         self.state.messages[panel.key] = MessageRecord(
             channel_id=channel_id,

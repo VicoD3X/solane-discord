@@ -1,4 +1,4 @@
-# Solane AI
+# SOLANE API
 
 ![CI](https://github.com/VicoD3X/solane-discord/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.13-3776AB?logo=python&logoColor=white)
@@ -6,11 +6,11 @@
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-a855f7)
 
-**Solane AI** is the Discord intel companion for **Solane Run**, a premium EVE
+**SOLANE API** is the Discord intel companion for **Solane Run**, a premium EVE
 Online freight service. The bot publishes clean, persistent Discord embeds for
 route risk, HighSec danger, corruption watch and service status.
 
-Solane AI is intentionally a thin public client. The private Solane API remains
+SOLANE API is intentionally a thin public client. The private Solane API remains
 the source of truth for ESI, zKillboard, route risk, pricing policy and internal
 freight logic.
 
@@ -19,7 +19,7 @@ EVE ESI / zKillboard / CCP web
               |
           solane-api
               |
-          Solane AI
+          SOLANE API
               |
        Discord channels
 ```
@@ -55,7 +55,7 @@ All sensitive logic belongs in the private `solane-api` service.
 
 ## Discord Install
 
-Solane AI uses the Discord Gateway through `discord.py`; it does not need an HTTP
+SOLANE API uses the Discord Gateway through `discord.py`; it does not need an HTTP
 interactions endpoint for the beta.
 
 Suggested minimal invite URL:
@@ -124,7 +124,7 @@ docker compose build
 
 ## Runtime State
 
-Solane AI stores Discord message IDs in `data/solane-ai-state.json` so it can
+SOLANE API stores Discord message IDs in `data/solane-ai-state.json` so it can
 edit existing panels instead of posting duplicates. The `data/` directory is
 ignored by Git.
 
@@ -135,7 +135,7 @@ ignored by Git.
 
 ## Legal
 
-Solane AI is an independent tool for EVE Online logistics. It is not affiliated
+SOLANE API is an independent tool for EVE Online logistics. It is not affiliated
 with CCP Games. EVE Online and related marks belong to their respective owners.
 
 This repository is proprietary. See [LICENSE](LICENSE).

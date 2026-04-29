@@ -32,9 +32,9 @@ class PanelMessage:
 
 def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
     return [
-        PanelMessage("risk", "Solane AI - Route Risk", build_route_risk_embed(snapshot)),
-        PanelMessage("corruption", "Solane AI - Corruption Watch", build_corruption_embed(snapshot)),
-        PanelMessage("service", "Solane AI - Service Intel", build_service_embed(snapshot)),
+        PanelMessage("risk", "SOLANE API - Route Risk", build_route_risk_embed(snapshot)),
+        PanelMessage("corruption", "SOLANE API - Corruption Watch", build_corruption_embed(snapshot)),
+        PanelMessage("service", "SOLANE API - Service Intel", build_service_embed(snapshot)),
     ]
 
 
@@ -48,7 +48,7 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
-        title="🛰️ SOLANE AI / ROUTE RISK",
+        title="🛰️ SOLANE API / ROUTE RISK",
         description="HighSec danger pipes, Solane restrictions and reopening signals.",
         color=PANEL_ROUTE_RISK,
     )
@@ -68,7 +68,7 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     embed.set_footer(
-        text="Solane AI - ETA is monitoring until Solane API exposes route-level recovery windows."
+        text="SOLANE API - ETA is monitoring until Solane API exposes route-level recovery windows."
     )
     return embed
 
@@ -80,7 +80,7 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title="🌀 SOLANE AI / CORRUPTION WATCH",
+        title="🌀 SOLANE API / CORRUPTION WATCH",
         description="Insurgency corruption level 4 and 5 systems.",
         color=PANEL_CORRUPTION,
     )
@@ -94,7 +94,7 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
         inline=True,
     )
-    embed.set_footer(text="Solane AI - Corruption source remains CCP web via Solane API.")
+    embed.set_footer(text="SOLANE API - Corruption source remains CCP web via Solane API.")
     return embed
 
 
@@ -115,7 +115,7 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     solane_status = str(service.get("label") or "Open")
 
     embed = _base_embed(
-        title="🟢 SOLANE AI / SERVICE INTEL",
+        title="🟢 SOLANE API / SERVICE INTEL",
         description="Public service status for Solane Run operations.",
         color=PANEL_SERVICE,
     )
@@ -129,7 +129,7 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
         value=_service_value(_count_label(overview, "corruption")),
         inline=True,
     )
-    embed.set_footer(text="Solane AI - Persistent Discord intel from Solane Run.")
+    embed.set_footer(text="SOLANE API - Persistent Discord intel from Solane Run.")
     return embed
 
 

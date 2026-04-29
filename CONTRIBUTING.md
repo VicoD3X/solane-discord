@@ -1,6 +1,6 @@
 # Contributing
 
-Solane AI is currently developed as part of the Solane Run beta. Public feedback
+SOLANE API is currently developed as part of the Solane Run beta. Public feedback
 is welcome, but the project remains proprietary and roadmap-driven.
 
 ## Good Contributions
