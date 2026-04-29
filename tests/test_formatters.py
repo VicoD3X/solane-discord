@@ -69,6 +69,15 @@ def test_build_panels_from_route_intel_snapshot() -> None:
         "recentlyOpenSystems": [
             {"systemId": 30002510, "name": "Old Man Star", "serviceType": "LowSec"},
         ],
+        "activeRestrictedSystems": [
+            {
+                "systemId": 30002813,
+                "name": "Tama",
+                "serviceType": "LowSec",
+                "shipKillsLastHour": 20,
+                "closedAt": "2026-04-29T07:30:00+00:00",
+            },
+        ],
     })
 
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
@@ -76,6 +85,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert panels[0].embed.color.value == 0x7AAACE
     assert "TEMP CLOSURES" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
+    assert "closed" in panels[0].embed.fields[1].value
     assert "RECENTLY OPEN" in panels[0].embed.fields[2].name
     assert "PERMA RESTRICTED LS" in panels[0].embed.fields[3].name
     assert "Ahbazon" in panels[0].embed.fields[3].value

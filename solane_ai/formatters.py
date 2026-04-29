@@ -63,7 +63,9 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
     restricted = route_risk.get("restrictedSystems") or []
     static_restricted = [item for item in restricted if item.get("source") == "static"]
-    dynamic_restricted = [item for item in restricted if item.get("source") != "static"]
+    dynamic_restricted = snapshot.get("activeRestrictedSystems") or [
+        item for item in restricted if item.get("source") != "static"
+    ]
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
@@ -219,14 +221,18 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
 def _dynamic_restricted_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
-    return "\n".join(_dynamic_restricted_item_label(item) for item in items)
+    latest_possible = datetime.max.replace(tzinfo=UTC)
+    ordered = sorted(
+        items,
+        key=lambda item: _parse_time(item.get("closedAt")) or latest_possible,
+    )
+    return "\n".join(_dynamic_restricted_item_label(item) for item in ordered[:12])
 
 
 def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
     service = _short_service(item.get("serviceType")) or "Unknown"
-    kills = item.get("shipKillsLastHour")
-    signal = f"`{kills}/h`" if kills is not None else "`live`"
-    return f"**{item.get('name', 'Unknown')}** {service} {signal}"
+    duration = _closed_duration_label(item.get("closedAt"))
+    return f"**{item.get('name', 'Unknown')}** {service} `{duration}`"
 
 
 def _static_watchlist_groups(items: list[dict[str, Any]]) -> dict[str, list[str]]:
@@ -302,3 +308,31 @@ def _format_utc_time(value: Any) -> str:
         return parsed.astimezone(UTC).strftime("%H:%M EVE")
     except ValueError:
         return str(value)
+
+
+def _closed_duration_label(value: Any) -> str:
+    parsed = _parse_time(value)
+    if parsed is None:
+        return "closed"
+
+    minutes = max(int((datetime.now(UTC) - parsed).total_seconds() // 60), 0)
+    if minutes < 60:
+        return f"closed {minutes} min"
+
+    hours, remainder = divmod(minutes, 60)
+    if remainder == 0:
+        return f"closed {hours}h"
+    return f"closed {hours}h {remainder}m"
+
+
+def _parse_time(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        text = str(value).replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)

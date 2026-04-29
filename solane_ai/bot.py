@@ -58,6 +58,9 @@ class SolaneAIBot(discord.Client):
                 dynamic_restricted,
                 bot_summary.get("generatedAt"),
             )
+            snapshot["activeRestrictedSystems"] = [
+                record.to_payload() for record in self.state.active_restrictions()
+            ]
             snapshot["recentlyOpenSystems"] = [record.to_payload() for record in recently_open]
         panels = build_panels(snapshot)
         for panel in panels:
