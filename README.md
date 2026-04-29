@@ -77,6 +77,20 @@ and must only live in `.env` or production secrets.
 
 ## Local Setup
 
+For the full local workspace with frontend + API, use the cockpit from the
+sibling frontend repo:
+
+```powershell
+cd "D:\PROJECT\Solane Run"
+npm run local:start:bot
+npm run local:doctor
+```
+
+The cockpit starts the private API first, points the frontend at the active API
+port, and injects the same local API URL into the bot process.
+
+Standalone bot setup remains available:
+
 ```powershell
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -111,6 +125,20 @@ service, usually:
 ```env
 SOLANE_API_BASE_URL=http://solane-api:8000
 ```
+
+## VPS Deploy
+
+Deploy the bot to the Solane Run VPS:
+
+```powershell
+.\scripts\deploy-vps.ps1
+```
+
+The deploy script reads the local `.env`, uploads a private
+`/srv/solane-run/shared/solane-bot.env` with strict permissions, rebuilds the
+Docker container, and starts it on the shared `solane-run` network.
+
+The frontend and API are not redeployed by this bot script.
 
 ## Checks
 
