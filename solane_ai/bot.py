@@ -46,6 +46,19 @@ class SolaneAIBot(discord.Client):
 
     async def publish_once(self) -> None:
         snapshot = await self.api.snapshot()
+        bot_summary = snapshot.get("botSummary")
+        route_risk = bot_summary.get("routeRisk") if isinstance(bot_summary, dict) else None
+        dynamic_restricted = (
+            route_risk.get("dynamicRestrictedSystems")
+            if isinstance(route_risk, dict)
+            else None
+        )
+        if isinstance(bot_summary, dict) and isinstance(dynamic_restricted, list):
+            recently_open = self.state.update_dynamic_restrictions(
+                dynamic_restricted,
+                bot_summary.get("generatedAt"),
+            )
+            snapshot["recentlyOpenSystems"] = [record.to_payload() for record in recently_open]
         panels = build_panels(snapshot)
         for panel in panels:
             channel_id = self.settings.configured_channels.get(panel.key)
@@ -95,4 +108,3 @@ def main() -> None:
         raise RuntimeError("At least one Discord channel ID must be configured.")
     bot = SolaneAIBot(settings)
     bot.run(settings.discord_token, log_handler=None)
-

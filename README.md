@@ -27,7 +27,7 @@ EVE ESI / zKillboard / CCP web
 ## Features
 
 - Persistent Discord panels: post once, then edit.
-- Route risk feed for HighSec danger and watched systems.
+- Route risk feed for HighSec danger, restricted systems and reopened systems.
 - Corruption LVL4/LVL5 watch.
 - Service board for Solane API and Tranquility status.
 - Public-safe implementation with no Discord token or private pricing logic.
@@ -37,7 +37,7 @@ EVE ESI / zKillboard / CCP web
 
 | Panel | Purpose |
 | --- | --- |
-| `Route Risk` | HighSec danger, watched pipes and reopened route signals. |
+| `Route Risk` | HighSec danger, restricted systems and recently reopened systems. |
 | `Corruption Watch` | LVL5 and LVL4 corruption systems from Solane API. |
 | `Service Intel` | Solane API state, Tranquility status and public service indicators. |
 

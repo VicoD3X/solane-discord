@@ -5,6 +5,31 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     panels = build_panels({
         "health": {"status": "ok"},
         "eveStatus": {"players": 18000, "vip": False},
+        "botSummary": {
+            "generatedAt": "2026-04-29T08:00:00+00:00",
+            "routeRisk": {
+                "restrictedSystems": [
+                    {
+                        "id": 30005196,
+                        "name": "Ahbazon",
+                        "serviceType": "LowSec",
+                        "source": "static",
+                        "reason": "Static Solane restricted system.",
+                    },
+                    {
+                        "id": 30002813,
+                        "name": "Tama",
+                        "serviceType": "LowSec",
+                        "source": "pvp",
+                        "reason": "Severe LowSec PVP activity detected.",
+                        "shipKillsLastHour": 20,
+                    },
+                ],
+                "staticRestrictedSystems": [],
+                "dynamicRestrictedSystems": [],
+            },
+            "service": {"status": "open", "label": "Open"},
+        },
         "routeIntel": {
             "crossroads": {
                 "label": "16 systems",
@@ -29,24 +54,32 @@ def test_build_panels_from_route_intel_snapshot() -> None:
                         "corruptionState": 5,
                         "corruptionPercentage": 88.4,
                         "suppressionPercentage": 12.0,
-                        "system": {"name": "Siseide"},
+                        "system": {"name": "Siseide", "serviceType": "HighSec"},
                     },
                     {
                         "corruptionState": 4,
                         "corruptionPercentage": 55.5,
                         "suppressionPercentage": 5.0,
-                        "system": {"name": "Turnur"},
+                        "system": {"name": "Turnur", "serviceType": "LowSec"},
                     },
                 ],
             },
         },
         "errors": [],
+        "recentlyOpenSystems": [
+            {"systemId": 30002510, "name": "Old Man Star", "serviceType": "LowSec"},
+        ],
     })
 
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
     assert "Uedama" in panels[0].embed.fields[0].value
+    assert panels[0].embed.fields[1].name == "Restricted System"
+    assert "Ahbazon" in panels[0].embed.fields[1].value
+    assert panels[0].embed.fields[2].name == "Recently Open System"
     assert "Siseide" in panels[1].embed.fields[0].value
+    assert "HS" in panels[1].embed.fields[0].value
     assert "18,000 pilots" in panels[2].embed.fields[1].value
+    assert panels[2].embed.fields[2].name == "ESI Updated"
 
 
 def test_build_panels_survives_empty_snapshot() -> None:
@@ -54,4 +87,3 @@ def test_build_panels_survives_empty_snapshot() -> None:
 
     assert len(panels) == 3
     assert all(panel.content_hash for panel in panels)
-

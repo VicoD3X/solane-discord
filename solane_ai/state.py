@@ -13,8 +13,55 @@ class MessageRecord:
 
 
 @dataclass
+class TrackedSystemRecord:
+    system_id: int
+    name: str
+    service_type: str | None = None
+    reason: str | None = None
+    ship_kills_last_hour: int | None = None
+    last_seen_at: str | None = None
+    opened_at: str | None = None
+
+    @classmethod
+    def from_api(cls, payload: dict, timestamp: str | None) -> TrackedSystemRecord:
+        return cls(
+            system_id=int(payload["id"]),
+            name=str(payload.get("name") or payload["id"]),
+            service_type=payload.get("serviceType"),
+            reason=payload.get("reason"),
+            ship_kills_last_hour=payload.get("shipKillsLastHour"),
+            last_seen_at=payload.get("lastSyncedAt") or timestamp,
+        )
+
+    @classmethod
+    def from_payload(cls, payload: dict) -> TrackedSystemRecord:
+        return cls(
+            system_id=int(payload["systemId"]),
+            name=str(payload["name"]),
+            service_type=payload.get("serviceType"),
+            reason=payload.get("reason"),
+            ship_kills_last_hour=payload.get("shipKillsLastHour"),
+            last_seen_at=payload.get("lastSeenAt"),
+            opened_at=payload.get("openedAt"),
+        )
+
+    def to_payload(self) -> dict:
+        return {
+            "systemId": self.system_id,
+            "name": self.name,
+            "serviceType": self.service_type,
+            "reason": self.reason,
+            "shipKillsLastHour": self.ship_kills_last_hour,
+            "lastSeenAt": self.last_seen_at,
+            "openedAt": self.opened_at,
+        }
+
+
+@dataclass
 class BotState:
     messages: dict[str, MessageRecord] = field(default_factory=dict)
+    dynamic_restricted_systems: dict[str, TrackedSystemRecord] = field(default_factory=dict)
+    recently_open_systems: dict[str, TrackedSystemRecord] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: Path) -> BotState:
@@ -29,8 +76,42 @@ class BotState:
                     content_hash=record.get("contentHash"),
                 )
                 for key, record in payload.get("messages", {}).items()
-            }
+            },
+            dynamic_restricted_systems={
+                key: TrackedSystemRecord.from_payload(record)
+                for key, record in payload.get("dynamicRestrictedSystems", {}).items()
+            },
+            recently_open_systems={
+                key: TrackedSystemRecord.from_payload(record)
+                for key, record in payload.get("recentlyOpenSystems", {}).items()
+            },
         )
+
+    def update_dynamic_restrictions(
+        self,
+        systems: list[dict],
+        timestamp: str | None,
+    ) -> list[TrackedSystemRecord]:
+        current = {
+            str(system["id"]): TrackedSystemRecord.from_api(system, timestamp)
+            for system in systems
+            if system.get("id") is not None
+        }
+        opened_keys = set(self.dynamic_restricted_systems) - set(current)
+        for key in opened_keys:
+            record = self.dynamic_restricted_systems[key]
+            record.opened_at = timestamp
+            self.recently_open_systems[key] = record
+
+        self.dynamic_restricted_systems = current
+        self.recently_open_systems = dict(
+            sorted(
+                self.recently_open_systems.items(),
+                key=lambda item: item[1].opened_at or "",
+                reverse=True,
+            )[:10]
+        )
+        return list(self.recently_open_systems.values())
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -42,6 +123,14 @@ class BotState:
                     "contentHash": record.content_hash,
                 }
                 for key, record in self.messages.items()
-            }
+            },
+            "dynamicRestrictedSystems": {
+                key: record.to_payload()
+                for key, record in self.dynamic_restricted_systems.items()
+            },
+            "recentlyOpenSystems": {
+                key: record.to_payload()
+                for key, record in self.recently_open_systems.items()
+            },
         }
         path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

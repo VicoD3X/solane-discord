@@ -37,15 +37,18 @@ def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
 
 def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     overview = _overview(snapshot)
+    bot_summary = _bot_summary(snapshot)
+    route_risk = bot_summary.get("routeRisk") if isinstance(bot_summary.get("routeRisk"), dict) else {}
     crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
     danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
     watched = [item for item in crossroads if _lower(item.get("label")) == "watched"]
-    reopened = [item for item in crossroads if _lower(item.get("label")) == "safe"]
+    restricted = route_risk.get("restrictedSystems") or []
+    recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
         title="Solane AI - Route Risk",
         description="Persistent route-risk board. Dynamic restrictions remain controlled by Solane API.",
-        color=SOLANE_RED if danger else SOLANE_ORANGE if watched else SOLANE_GREEN,
+        color=SOLANE_RED if danger or restricted else SOLANE_ORANGE if watched else SOLANE_GREEN,
     )
     embed.add_field(
         name="HighSec Danger",
@@ -53,13 +56,13 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     embed.add_field(
-        name="Watched Pipes",
-        value=_system_lines(watched[:8], empty="No watched pipe."),
+        name="Restricted System",
+        value=_restricted_system_lines(restricted, empty="No restricted system."),
         inline=False,
     )
     embed.add_field(
-        name="Recently Open",
-        value=_system_lines(reopened[:8], empty="No recent reopening feed yet."),
+        name="Recently Open System",
+        value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
     embed.set_footer(
@@ -97,12 +100,17 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     health = snapshot.get("health") or {}
     eve = snapshot.get("eveStatus") or {}
     overview = _overview(snapshot)
+    bot_summary = _bot_summary(snapshot)
+    service = bot_summary.get("service") if isinstance(bot_summary.get("service"), dict) else {}
     errors = snapshot.get("errors") or []
 
     api_state = "Operational" if health and not errors else "Partial" if health else "Unavailable"
     players = eve.get("players")
     vip = eve.get("vip")
     tranquility = "VIP mode" if vip else f"{players:,} pilots" if isinstance(players, int) else "Syncing"
+    server_version = str(eve.get("server_version") or "Unavailable")
+    esi_sync = _format_utc_time(eve.get("fetched_at"))
+    solane_status = str(service.get("label") or "Open")
 
     embed = _base_embed(
         title="Solane AI - Service Intel",
@@ -111,9 +119,9 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     )
     embed.add_field(name="Solane API", value=api_state, inline=True)
     embed.add_field(name="Tranquility", value=tranquility, inline=True)
-    embed.add_field(name="Pricing Policy", value="No public policy advisory.", inline=True)
-    embed.add_field(name="HighSec Pipes", value=_count_label(overview, "crossroads"), inline=True)
-    embed.add_field(name="Popular Corridors", value=_count_label(overview, "gold"), inline=True)
+    embed.add_field(name="ESI Updated", value=esi_sync, inline=True)
+    embed.add_field(name="Solane Run", value=solane_status, inline=True)
+    embed.add_field(name="Server Version", value=server_version, inline=True)
     embed.add_field(name="Insurgency", value=_count_label(overview, "corruption"), inline=True)
     embed.set_footer(text="Solane AI - Persistent Discord intel from Solane Run.")
     return embed
@@ -134,6 +142,11 @@ def _overview(snapshot: dict[str, Any]) -> dict[str, Any]:
     return overview if isinstance(overview, dict) else {}
 
 
+def _bot_summary(snapshot: dict[str, Any]) -> dict[str, Any]:
+    summary = snapshot.get("botSummary")
+    return summary if isinstance(summary, dict) else {}
+
+
 def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
@@ -147,6 +160,43 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
     return "\n".join(lines)
 
 
+def _restricted_system_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    static = [item for item in items if item.get("source") == "static"]
+    dynamic = [item for item in items if item.get("source") != "static"]
+    lines: list[str] = []
+    if dynamic:
+        lines.append("Temporary: " + ", ".join(_restricted_item_label(item) for item in dynamic[:8]))
+    if static:
+        static_items = (
+            _restricted_item_label(item, include_kills=False)
+            for item in static[:12]
+        )
+        lines.append("Static: " + ", ".join(static_items))
+    return "\n".join(lines)
+
+
+def _restricted_item_label(item: dict[str, Any], include_kills: bool = True) -> str:
+    service = _short_service(item.get("serviceType"))
+    suffix = f" ({service})" if service else ""
+    kills = item.get("shipKillsLastHour")
+    if include_kills and kills is not None:
+        suffix = f"{suffix} {kills}/h"
+    return f"**{item.get('name', 'Unknown')}**{suffix}"
+
+
+def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    lines = []
+    for item in items[:8]:
+        service = _short_service(item.get("serviceType"))
+        service_suffix = f" - {service}" if service else ""
+        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} - reopened")
+    return "\n".join(lines)
+
+
 def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
@@ -154,10 +204,15 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
     for item in items[:10]:
         system = item.get("system") or {}
         name = system.get("name", "Unknown")
+        service = _short_service(system.get("serviceType"))
+        service_prefix = f"{service} - " if service else ""
         level = item.get("corruptionState", "?")
         corruption = round(float(item.get("corruptionPercentage") or 0))
         suppression = round(float(item.get("suppressionPercentage") or 0))
-        lines.append(f"**{name}** - LVL{level} - {corruption}% corruption / {suppression}% suppression")
+        lines.append(
+            f"**{name}** - {service_prefix}LVL{level} - "
+            f"{corruption}% corruption / {suppression}% suppression"
+        )
     return "\n".join(lines)
 
 
@@ -174,3 +229,24 @@ def _count_label(overview: dict[str, Any], key: str) -> str:
 
 def _lower(value: Any) -> str:
     return str(value or "").casefold()
+
+
+def _short_service(value: Any) -> str:
+    if value == "HighSec":
+        return "HS"
+    if value == "LowSec":
+        return "LS"
+    return str(value or "")
+
+
+def _format_utc_time(value: Any) -> str:
+    if not value:
+        return "Unavailable"
+    try:
+        text = str(value).replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC).strftime("%H:%M EVE")
+    except ValueError:
+        return str(value)
