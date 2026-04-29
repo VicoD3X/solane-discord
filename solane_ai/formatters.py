@@ -162,7 +162,7 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
         name = system.get("name", "Unknown")
         kills = item.get("shipKillsLastHour")
         kills_text = kills if kills is not None else "?"
-        lines.append(f"**{name}**\n{kills_text} kills/h - monitored")
+        lines.append(f"**{name}**\n`{kills_text} kills/h` - monitored")
     return "\n".join(lines)
 
 
@@ -192,7 +192,7 @@ def _restricted_item_label(item: dict[str, Any], include_kills: bool = True) -> 
     suffix = f" ({service})" if service else ""
     kills = item.get("shipKillsLastHour")
     if include_kills and kills is not None:
-        suffix = f"{suffix} {kills}/h"
+        suffix = f"{suffix} `{kills}/h`"
     return f"**{item.get('name', 'Unknown')}**{suffix}"
 
 
@@ -203,7 +203,7 @@ def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
     for item in items[:8]:
         service = _short_service(item.get("serviceType"))
         service_suffix = f" - {service}" if service else ""
-        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix}\nReopened")
+        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix}\n`Reopened`")
     return "\n".join(lines)
 
 
@@ -219,7 +219,7 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         level = item.get("corruptionState", "?")
         corruption = round(float(item.get("corruptionPercentage") or 0))
         suppression = round(float(item.get("suppressionPercentage") or 0))
-        lines.append(f"**{name}**\n{service_prefix}LVL{level} - {corruption}% / {suppression}%")
+        lines.append(f"**{name}**\n`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%`")
     return "\n".join(lines)
 
 
