@@ -1,0 +1,176 @@
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any
+
+import discord
+
+SOLANE_PURPLE = 0xA855F7
+SOLANE_BLUE = 0x19A8FF
+SOLANE_GOLD = 0xFFD66A
+SOLANE_RED = 0xDB1A1A
+SOLANE_ORANGE = 0xFFC81E
+SOLANE_GREEN = 0x67C090
+
+
+@dataclass(frozen=True)
+class PanelMessage:
+    key: str
+    title: str
+    embed: discord.Embed
+
+    @property
+    def content_hash(self) -> str:
+        payload = self.embed.to_dict()
+        return hashlib.sha256(repr(payload).encode("utf-8")).hexdigest()
+
+
+def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
+    return [
+        PanelMessage("risk", "Solane AI - Route Risk", build_route_risk_embed(snapshot)),
+        PanelMessage("corruption", "Solane AI - Corruption Watch", build_corruption_embed(snapshot)),
+        PanelMessage("service", "Solane AI - Service Intel", build_service_embed(snapshot)),
+    ]
+
+
+def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    overview = _overview(snapshot)
+    crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
+    danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
+    watched = [item for item in crossroads if _lower(item.get("label")) == "watched"]
+    reopened = [item for item in crossroads if _lower(item.get("label")) == "safe"]
+
+    embed = _base_embed(
+        title="Solane AI - Route Risk",
+        description="Persistent route-risk board. Dynamic restrictions remain controlled by Solane API.",
+        color=SOLANE_RED if danger else SOLANE_ORANGE if watched else SOLANE_GREEN,
+    )
+    embed.add_field(
+        name="HighSec Danger",
+        value=_system_lines(danger, empty="No HighSec pipe in Danger."),
+        inline=False,
+    )
+    embed.add_field(
+        name="Watched Pipes",
+        value=_system_lines(watched[:8], empty="No watched pipe."),
+        inline=False,
+    )
+    embed.add_field(
+        name="Recently Open",
+        value=_system_lines(reopened[:8], empty="No recent reopening feed yet."),
+        inline=False,
+    )
+    embed.set_footer(
+        text="Solane AI - ETA is monitoring until Solane API exposes route-level recovery windows."
+    )
+    return embed
+
+
+def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    overview = _overview(snapshot)
+    items = ((overview.get("corruption") or {}).get("items") or []) if overview else []
+    lvl5 = [item for item in items if int(item.get("corruptionState") or 0) >= 5]
+    lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
+
+    embed = _base_embed(
+        title="Solane AI - Corruption Watch",
+        description="Live LVL4/LVL5 insurgency watch from the Solane API feed.",
+        color=SOLANE_RED if lvl5 else SOLANE_ORANGE if lvl4 else SOLANE_GREEN,
+    )
+    embed.add_field(
+        name="LVL5",
+        value=_corruption_lines(lvl5, empty="No LVL5 corruption detected."),
+        inline=False,
+    )
+    embed.add_field(
+        name="LVL4",
+        value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
+        inline=False,
+    )
+    embed.set_footer(text="Solane AI - Corruption source remains CCP web via Solane API.")
+    return embed
+
+
+def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    health = snapshot.get("health") or {}
+    eve = snapshot.get("eveStatus") or {}
+    overview = _overview(snapshot)
+    errors = snapshot.get("errors") or []
+
+    api_state = "Operational" if health and not errors else "Partial" if health else "Unavailable"
+    players = eve.get("players")
+    vip = eve.get("vip")
+    tranquility = "VIP mode" if vip else f"{players:,} pilots" if isinstance(players, int) else "Syncing"
+
+    embed = _base_embed(
+        title="Solane AI - Service Intel",
+        description="Service board for Solane Run operations.",
+        color=SOLANE_BLUE if api_state == "Operational" else SOLANE_ORANGE,
+    )
+    embed.add_field(name="Solane API", value=api_state, inline=True)
+    embed.add_field(name="Tranquility", value=tranquility, inline=True)
+    embed.add_field(name="Pricing Policy", value="No public policy advisory.", inline=True)
+    embed.add_field(name="HighSec Pipes", value=_count_label(overview, "crossroads"), inline=True)
+    embed.add_field(name="Popular Corridors", value=_count_label(overview, "gold"), inline=True)
+    embed.add_field(name="Insurgency", value=_count_label(overview, "corruption"), inline=True)
+    embed.set_footer(text="Solane AI - Persistent Discord intel from Solane Run.")
+    return embed
+
+
+def _base_embed(title: str, description: str, color: int) -> discord.Embed:
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        color=color,
+        timestamp=datetime.now(UTC),
+    )
+    return embed
+
+
+def _overview(snapshot: dict[str, Any]) -> dict[str, Any]:
+    overview = snapshot.get("routeIntel")
+    return overview if isinstance(overview, dict) else {}
+
+
+def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    lines = []
+    for item in items[:10]:
+        system = item.get("system") or {}
+        name = system.get("name", "Unknown")
+        kills = item.get("shipKillsLastHour")
+        eta = "monitoring"
+        lines.append(f"**{name}** - {kills if kills is not None else '?'} kills/h - ETA: {eta}")
+    return "\n".join(lines)
+
+
+def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    lines = []
+    for item in items[:10]:
+        system = item.get("system") or {}
+        name = system.get("name", "Unknown")
+        level = item.get("corruptionState", "?")
+        corruption = round(float(item.get("corruptionPercentage") or 0))
+        suppression = round(float(item.get("suppressionPercentage") or 0))
+        lines.append(f"**{name}** - LVL{level} - {corruption}% corruption / {suppression}% suppression")
+    return "\n".join(lines)
+
+
+def _count_label(overview: dict[str, Any], key: str) -> str:
+    section = overview.get(key) if overview else None
+    if not isinstance(section, dict):
+        return "Unavailable"
+    label = section.get("label")
+    if label:
+        return str(label)
+    items = section.get("items")
+    return f"{len(items)} items" if isinstance(items, list) else "Unavailable"
+
+
+def _lower(value: Any) -> str:
+    return str(value or "").casefold()
