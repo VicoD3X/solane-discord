@@ -77,7 +77,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "TEMP CLOSURES" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
     assert "RECENTLY OPEN" in panels[0].embed.fields[2].name
-    assert "WATCHLIST LS" in panels[0].embed.fields[3].name
+    assert "PERMA RESTRICTED LS" in panels[0].embed.fields[3].name
     assert "Ahbazon" in panels[0].embed.fields[3].value
     assert "SOURCE" in panels[0].embed.fields[4].name
     assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[4].value

@@ -95,14 +95,14 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     )
     for service, names in _static_watchlist_groups(static_restricted).items():
         embed.add_field(
-            name=f"{EMOJI_BRICKS} WATCHLIST {service}",
+            name=f"{EMOJI_BRICKS} PERMA RESTRICTED {service}",
             value=", ".join(names),
             inline=True,
         )
     if not static_restricted:
         embed.add_field(
-            name=f"{EMOJI_BRICKS} STATIC WATCHLIST",
-            value="No static watchlist entry.",
+            name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
+            value="No permanent restriction.",
             inline=True,
         )
     _append_source_field(embed, snapshot)
