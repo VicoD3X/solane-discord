@@ -52,27 +52,27 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
-        title="SOLANE API / ROUTE RISK",
+        title="🛰️ SOLANE API / ROUTE RISK",
         description="Operational route watch for active pipe danger and Solane restrictions.",
         color=PANEL_ROUTE_RISK,
     )
     embed.add_field(
-        name="HIGHSEC DANGER",
+        name="🔴 HIGHSEC DANGER",
         value=_system_lines(danger, empty="No HighSec pipe in Danger."),
         inline=False,
     )
     embed.add_field(
-        name="TEMPORARY CLOSURES",
+        name="⏳ TEMPORARY CLOSURES",
         value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
         inline=False,
     )
     embed.add_field(
-        name="STATIC WATCHLIST",
+        name="🧱 STATIC WATCHLIST",
         value=_static_watchlist_lines(static_restricted, empty="No static watchlist entry."),
         inline=False,
     )
     embed.add_field(
-        name="RECENTLY OPEN",
+        name="🟢 RECENTLY OPEN",
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
@@ -88,17 +88,17 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title="SOLANE API / CORRUPTION WATCH",
+        title="🌀 SOLANE API / CORRUPTION WATCH",
         description="Insurgency corruption level 4 and 5 systems.",
         color=PANEL_CORRUPTION,
     )
     embed.add_field(
-        name="LVL5 CRITICAL",
+        name="🔵 LVL5 CRITICAL",
         value=_corruption_lines(lvl5, empty="No LVL5 corruption detected."),
         inline=True,
     )
     embed.add_field(
-        name="LVL4 WATCH",
+        name="🟣 LVL4 WATCH",
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
         inline=True,
     )
@@ -124,17 +124,17 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     solane_status = str(service.get("label") or "Open")
 
     embed = _base_embed(
-        title="SOLANE API / SERVICE INTEL",
+        title="🟢 SOLANE API / SERVICE INTEL",
         description="Public service status for Solane Run operations.",
         color=PANEL_SERVICE,
     )
-    embed.add_field(name="API LINK", value=_service_value(api_state), inline=True)
-    embed.add_field(name="EVE CLUSTER", value=_service_value(tranquility), inline=True)
-    embed.add_field(name="ESI SYNC", value=_service_value(esi_sync), inline=True)
-    embed.add_field(name="SERVICE", value=_service_value(solane_status), inline=True)
-    embed.add_field(name="BUILD", value=_service_value(server_version), inline=True)
+    embed.add_field(name="🧠 API LINK", value=_service_value(api_state), inline=True)
+    embed.add_field(name="📡 EVE CLUSTER", value=_service_value(tranquility), inline=True)
+    embed.add_field(name="⏱️ ESI SYNC", value=_service_value(esi_sync), inline=True)
+    embed.add_field(name="🚚 SERVICE", value=_service_value(solane_status), inline=True)
+    embed.add_field(name="🧾 BUILD", value=_service_value(server_version), inline=True)
     embed.add_field(
-        name="CORRUPTION",
+        name="🌀 CORRUPTION",
         value=_service_value(_count_label(overview, "corruption")),
         inline=True,
     )
@@ -156,7 +156,7 @@ def _base_embed(title: str, description: str, color: int) -> discord.Embed:
 def _append_source_field(embed: discord.Embed, snapshot: dict[str, Any]) -> None:
     update_time = _format_utc_time(_api_updated_at(snapshot))
     embed.add_field(
-        name="SOURCE",
+        name="🔎 SOURCE",
         value=f"Last API update: `{update_time}`\nCheck our source: {SOURCE_URL}",
         inline=False,
     )
