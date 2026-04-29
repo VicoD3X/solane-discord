@@ -88,18 +88,11 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
-    for service, names in _static_watchlist_groups(static_restricted).items():
-        embed.add_field(
-            name=f"{EMOJI_BRICKS} PERMA RESTRICTED {service}",
-            value=", ".join(names),
-            inline=True,
-        )
-    if not static_restricted:
-        embed.add_field(
-            name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
-            value="No permanent restriction.",
-            inline=True,
-        )
+    embed.add_field(
+        name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
+        value=_static_watchlist_lines(static_restricted),
+        inline=False,
+    )
     _append_source_field(embed, snapshot)
     embed.set_footer(text=FOOTER_TEXT)
     return embed
@@ -235,12 +228,12 @@ def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
     return f"**{item.get('name', 'Unknown')}** {service} `{duration}`"
 
 
-def _static_watchlist_groups(items: list[dict[str, Any]]) -> dict[str, list[str]]:
-    grouped: dict[str, list[str]] = {}
-    for item in items[:14]:
-        service = _short_service(item.get("serviceType")) or "Other"
-        grouped.setdefault(service, []).append(str(item.get("name", "Unknown")))
-    return grouped
+def _static_watchlist_lines(items: list[dict[str, Any]]) -> str:
+    if not items:
+        return "No permanent restriction."
+
+    names = sorted(str(item.get("name", "Unknown")) for item in items)
+    return " • ".join(f"**{name}**" for name in names)
 
 
 def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:

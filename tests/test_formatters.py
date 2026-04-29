@@ -17,6 +17,13 @@ def test_build_panels_from_route_intel_snapshot() -> None:
                         "reason": "Static Solane restricted system.",
                     },
                     {
+                        "id": 30002797,
+                        "name": "Niarja",
+                        "serviceType": "Pochven",
+                        "source": "static",
+                        "reason": "Static Solane restricted system.",
+                    },
+                    {
                         "id": 30002813,
                         "name": "Tama",
                         "serviceType": "LowSec",
@@ -87,8 +94,10 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Tama" in panels[0].embed.fields[1].value
     assert "closed" in panels[0].embed.fields[1].value
     assert "RECENTLY OPEN" in panels[0].embed.fields[2].name
-    assert "PERMA RESTRICTED LS" in panels[0].embed.fields[3].name
+    assert panels[0].embed.fields[3].name.endswith("PERMA RESTRICTED")
     assert "Ahbazon" in panels[0].embed.fields[3].value
+    assert "Niarja" in panels[0].embed.fields[3].value
+    assert "PERMA RESTRICTED Pochven" not in panels[0].embed.fields[3].name
     assert "SOURCE" in panels[0].embed.fields[4].name
     assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[4].value
     assert "https://solane-run.app/route-intel" in panels[0].embed.fields[4].value
