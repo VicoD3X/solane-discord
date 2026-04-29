@@ -76,22 +76,15 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         value=_system_lines(danger, empty="No HighSec pipe in Danger."),
         inline=True,
     )
-    for index, chunk in enumerate(_chunks(dynamic_restricted[:8], 4)):
-        embed.add_field(
-            name=f"{EMOJI_HOURGLASS} TEMP CLOSURES" if index == 0 else f"{EMOJI_HOURGLASS} MORE CLOSURES",
-            value=_dynamic_restricted_lines(chunk, empty="No temporary closure."),
-            inline=True,
-        )
-    if not dynamic_restricted:
-        embed.add_field(
-            name=f"{EMOJI_HOURGLASS} TEMP CLOSURES",
-            value="No temporary closure.",
-            inline=True,
-        )
+    embed.add_field(
+        name=f"{EMOJI_HOURGLASS} TEMP CLOSURES",
+        value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
+        inline=False,
+    )
     embed.add_field(
         name=f"{EMOJI_GREEN} RECENTLY OPEN",
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
-        inline=True,
+        inline=False,
     )
     for service, names in _static_watchlist_groups(static_restricted).items():
         embed.add_field(
@@ -269,10 +262,6 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         suppression = round(float(item.get("suppressionPercentage") or 0))
         lines.append(f"**{name}**\n`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%`")
     return "\n".join(lines)
-
-
-def _chunks(items: list[dict[str, Any]], size: int) -> list[list[dict[str, Any]]]:
-    return [items[index:index + size] for index in range(0, len(items), size)]
 
 
 def _service_value(value: str) -> str:
