@@ -74,15 +74,18 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
     assert "Uedama" in panels[0].embed.fields[0].value
     assert panels[0].embed.color.value == 0x7AAACE
-    assert panels[0].embed.fields[1].name == "⛔ RESTRICTED SYSTEM"
+    assert panels[0].embed.fields[1].name == "RESTRICTED SYSTEM"
     assert "Ahbazon" in panels[0].embed.fields[1].value
-    assert panels[0].embed.fields[2].name == "🟢 RECENTLY OPEN SYSTEM"
+    assert panels[0].embed.fields[2].name == "RECENTLY OPEN SYSTEM"
+    assert panels[0].embed.fields[3].name == "SOURCE"
+    assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[3].value
+    assert "https://solane-run.app/route-intel" in panels[0].embed.fields[3].value
     assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value
     assert panels[2].embed.color.value == 0x17C079
     assert "18,000 pilots" in panels[2].embed.fields[1].value
-    assert panels[2].embed.fields[2].name == "⏱️ ESI SYNC"
+    assert panels[2].embed.fields[2].name == "ESI SYNC"
 
 
 def test_build_panels_survives_empty_snapshot() -> None:
