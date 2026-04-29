@@ -17,6 +17,7 @@ PANEL_ROUTE_RISK = 0x7AAACE
 PANEL_CORRUPTION = 0x1A2CA3
 PANEL_SERVICE = 0x17C079
 SOURCE_URL = "https://solane-run.app/route-intel"
+FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
 
 @dataclass(frozen=True)
@@ -69,7 +70,7 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     _append_source_field(embed, snapshot)
-    embed.set_footer(text="SOLANE API - ETA monitoring for restricted and reopened systems.")
+    embed.set_footer(text=FOOTER_TEXT)
     return embed
 
 
@@ -95,7 +96,7 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=True,
     )
     _append_source_field(embed, snapshot)
-    embed.set_footer(text="SOLANE API - Corruption source remains CCP web via Solane API.")
+    embed.set_footer(text=FOOTER_TEXT)
     return embed
 
 
@@ -131,7 +132,7 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=True,
     )
     _append_source_field(embed, snapshot)
-    embed.set_footer(text="SOLANE API - Persistent Discord intel from Solane Run.")
+    embed.set_footer(text=FOOTER_TEXT)
     return embed
 
 
