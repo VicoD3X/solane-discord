@@ -72,7 +72,7 @@ class BotState:
     def load(cls, path: Path) -> BotState:
         if not path.exists():
             return cls()
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
         return cls(
             messages={
                 key: MessageRecord(
