@@ -80,7 +80,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value
-    assert panels[2].embed.color.value == 0x170C79
+    assert panels[2].embed.color.value == 0x17C079
     assert "18,000 pilots" in panels[2].embed.fields[1].value
     assert panels[2].embed.fields[2].name == "ESI UPDATED"
 
