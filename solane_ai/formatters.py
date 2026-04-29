@@ -119,13 +119,13 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
         description="Public service status for Solane Run operations.",
         color=PANEL_SERVICE,
     )
-    embed.add_field(name="🧠 SOLANE API", value=_service_value(api_state), inline=True)
-    embed.add_field(name="📡 TRANQUILITY", value=_service_value(tranquility), inline=True)
-    embed.add_field(name="⏱️ ESI UPDATED", value=_service_value(esi_sync), inline=True)
-    embed.add_field(name="🚚 SOLANE RUN", value=_service_value(solane_status), inline=True)
-    embed.add_field(name="🧾 SERVER VERSION", value=_service_value(server_version), inline=True)
+    embed.add_field(name="🧠 API LINK", value=_service_value(api_state), inline=True)
+    embed.add_field(name="📡 EVE CLUSTER", value=_service_value(tranquility), inline=True)
+    embed.add_field(name="⏱️ ESI SYNC", value=_service_value(esi_sync), inline=True)
+    embed.add_field(name="🚚 SERVICE", value=_service_value(solane_status), inline=True)
+    embed.add_field(name="🧾 BUILD", value=_service_value(server_version), inline=True)
     embed.add_field(
-        name="🌀 INSURGENCY",
+        name="🌀 CORRUPTION",
         value=_service_value(_count_label(overview, "corruption")),
         inline=True,
     )
@@ -224,7 +224,7 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
 
 
 def _service_value(value: str) -> str:
-    return f"**{value}**"
+    return f"`{value}`"
 
 
 def _count_label(overview: dict[str, Any], key: str) -> str:
