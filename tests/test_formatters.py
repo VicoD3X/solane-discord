@@ -73,13 +73,16 @@ def test_build_panels_from_route_intel_snapshot() -> None:
 
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
     assert "Uedama" in panels[0].embed.fields[0].value
-    assert panels[0].embed.fields[1].name == "Restricted System"
+    assert panels[0].embed.color.value == 0x7AAACE
+    assert panels[0].embed.fields[1].name == "RESTRICTED SYSTEM"
     assert "Ahbazon" in panels[0].embed.fields[1].value
-    assert panels[0].embed.fields[2].name == "Recently Open System"
+    assert panels[0].embed.fields[2].name == "RECENTLY OPEN SYSTEM"
+    assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value
+    assert panels[2].embed.color.value == 0x170C79
     assert "18,000 pilots" in panels[2].embed.fields[1].value
-    assert panels[2].embed.fields[2].name == "ESI Updated"
+    assert panels[2].embed.fields[2].name == "ESI UPDATED"
 
 
 def test_build_panels_survives_empty_snapshot() -> None:

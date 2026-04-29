@@ -13,6 +13,9 @@ SOLANE_GOLD = 0xFFD66A
 SOLANE_RED = 0xDB1A1A
 SOLANE_ORANGE = 0xFFC81E
 SOLANE_GREEN = 0x67C090
+PANEL_ROUTE_RISK = 0x7AAACE
+PANEL_CORRUPTION = 0x1A2CA3
+PANEL_SERVICE = 0x170C79
 
 
 @dataclass(frozen=True)
@@ -41,27 +44,26 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     route_risk = bot_summary.get("routeRisk") if isinstance(bot_summary.get("routeRisk"), dict) else {}
     crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
     danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
-    watched = [item for item in crossroads if _lower(item.get("label")) == "watched"]
     restricted = route_risk.get("restrictedSystems") or []
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
-        title="Solane AI - Route Risk",
-        description="Persistent route-risk board. Dynamic restrictions remain controlled by Solane API.",
-        color=SOLANE_RED if danger or restricted else SOLANE_ORANGE if watched else SOLANE_GREEN,
+        title="SOLANE AI / ROUTE RISK",
+        description="HighSec danger pipes, Solane restrictions and reopening signals.",
+        color=PANEL_ROUTE_RISK,
     )
     embed.add_field(
-        name="HighSec Danger",
+        name="HIGHSEC DANGER",
         value=_system_lines(danger, empty="No HighSec pipe in Danger."),
-        inline=False,
+        inline=True,
     )
     embed.add_field(
-        name="Restricted System",
+        name="RESTRICTED SYSTEM",
         value=_restricted_system_lines(restricted, empty="No restricted system."),
         inline=False,
     )
     embed.add_field(
-        name="Recently Open System",
+        name="RECENTLY OPEN SYSTEM",
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
@@ -78,19 +80,19 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title="Solane AI - Corruption Watch",
-        description="Live LVL4/LVL5 insurgency watch from the Solane API feed.",
-        color=SOLANE_RED if lvl5 else SOLANE_ORANGE if lvl4 else SOLANE_GREEN,
+        title="SOLANE AI / CORRUPTION WATCH",
+        description="Insurgency corruption level 4 and 5 systems.",
+        color=PANEL_CORRUPTION,
     )
     embed.add_field(
-        name="LVL5",
+        name="LVL5 CRITICAL",
         value=_corruption_lines(lvl5, empty="No LVL5 corruption detected."),
-        inline=False,
+        inline=True,
     )
     embed.add_field(
-        name="LVL4",
+        name="LVL4 WATCH",
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
-        inline=False,
+        inline=True,
     )
     embed.set_footer(text="Solane AI - Corruption source remains CCP web via Solane API.")
     return embed
@@ -113,16 +115,20 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     solane_status = str(service.get("label") or "Open")
 
     embed = _base_embed(
-        title="Solane AI - Service Intel",
-        description="Service board for Solane Run operations.",
-        color=SOLANE_BLUE if api_state == "Operational" else SOLANE_ORANGE,
+        title="SOLANE AI / SERVICE INTEL",
+        description="Public service status for Solane Run operations.",
+        color=PANEL_SERVICE,
     )
-    embed.add_field(name="Solane API", value=api_state, inline=True)
-    embed.add_field(name="Tranquility", value=tranquility, inline=True)
-    embed.add_field(name="ESI Updated", value=esi_sync, inline=True)
-    embed.add_field(name="Solane Run", value=solane_status, inline=True)
-    embed.add_field(name="Server Version", value=server_version, inline=True)
-    embed.add_field(name="Insurgency", value=_count_label(overview, "corruption"), inline=True)
+    embed.add_field(name="SOLANE API", value=_service_value(api_state), inline=True)
+    embed.add_field(name="TRANQUILITY", value=_service_value(tranquility), inline=True)
+    embed.add_field(name="ESI UPDATED", value=_service_value(esi_sync), inline=True)
+    embed.add_field(name="SOLANE RUN", value=_service_value(solane_status), inline=True)
+    embed.add_field(name="SERVER VERSION", value=_service_value(server_version), inline=True)
+    embed.add_field(
+        name="INSURGENCY",
+        value=_service_value(_count_label(overview, "corruption")),
+        inline=True,
+    )
     embed.set_footer(text="Solane AI - Persistent Discord intel from Solane Run.")
     return embed
 
@@ -155,8 +161,8 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
         system = item.get("system") or {}
         name = system.get("name", "Unknown")
         kills = item.get("shipKillsLastHour")
-        eta = "monitoring"
-        lines.append(f"**{name}** - {kills if kills is not None else '?'} kills/h - ETA: {eta}")
+        kills_text = kills if kills is not None else "?"
+        lines.append(f"**{name}**\n{kills_text} kills/h - monitored")
     return "\n".join(lines)
 
 
@@ -167,13 +173,17 @@ def _restricted_system_lines(items: list[dict[str, Any]], empty: str) -> str:
     dynamic = [item for item in items if item.get("source") != "static"]
     lines: list[str] = []
     if dynamic:
-        lines.append("Temporary: " + ", ".join(_restricted_item_label(item) for item in dynamic[:8]))
+        lines.append("**Temporary closures**")
+        lines.extend(_restricted_item_label(item) for item in dynamic[:8])
     if static:
+        if lines:
+            lines.append("")
         static_items = (
             _restricted_item_label(item, include_kills=False)
             for item in static[:12]
         )
-        lines.append("Static: " + ", ".join(static_items))
+        lines.append("**Static watchlist**")
+        lines.append(", ".join(static_items))
     return "\n".join(lines)
 
 
@@ -193,7 +203,7 @@ def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
     for item in items[:8]:
         service = _short_service(item.get("serviceType"))
         service_suffix = f" - {service}" if service else ""
-        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} - reopened")
+        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix}\nReopened")
     return "\n".join(lines)
 
 
@@ -209,11 +219,12 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         level = item.get("corruptionState", "?")
         corruption = round(float(item.get("corruptionPercentage") or 0))
         suppression = round(float(item.get("suppressionPercentage") or 0))
-        lines.append(
-            f"**{name}** - {service_prefix}LVL{level} - "
-            f"{corruption}% corruption / {suppression}% suppression"
-        )
+        lines.append(f"**{name}**\n{service_prefix}LVL{level} - {corruption}% / {suppression}%")
     return "\n".join(lines)
+
+
+def _service_value(value: str) -> str:
+    return f"**{value}**"
 
 
 def _count_label(overview: dict[str, Any], key: str) -> str:
