@@ -19,6 +19,21 @@ PANEL_SERVICE = 0x17C079
 SOURCE_URL = "https://solane-run.app/route-intel"
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
+EMOJI_SATELLITE = "\U0001F6F0\ufe0f"
+EMOJI_RED = "\U0001F534"
+EMOJI_HOURGLASS = "\u23F3"
+EMOJI_BRICKS = "\U0001F9F1"
+EMOJI_GREEN = "\U0001F7E2"
+EMOJI_SOURCE = "\U0001F50E"
+EMOJI_CYCLONE = "\U0001F300"
+EMOJI_BLUE = "\U0001F535"
+EMOJI_PURPLE = "\U0001F7E3"
+EMOJI_BRAIN = "\U0001F9E0"
+EMOJI_SATELLITE_DISH = "\U0001F4E1"
+EMOJI_TIMER = "\u23F1\ufe0f"
+EMOJI_TRUCK = "\U0001F69A"
+EMOJI_RECEIPT = "\U0001F9FE"
+
 
 @dataclass(frozen=True)
 class PanelMessage:
@@ -52,30 +67,44 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
-        title="🛰️ SOLANE API / ROUTE RISK",
+        title=f"{EMOJI_SATELLITE} SOLANE API / ROUTE RISK",
         description="Operational route watch for active pipe danger and Solane restrictions.",
         color=PANEL_ROUTE_RISK,
     )
     embed.add_field(
-        name="🔴 HIGHSEC DANGER",
+        name=f"{EMOJI_RED} HIGHSEC DANGER",
         value=_system_lines(danger, empty="No HighSec pipe in Danger."),
-        inline=False,
+        inline=True,
     )
+    for index, chunk in enumerate(_chunks(dynamic_restricted[:8], 4)):
+        embed.add_field(
+            name=f"{EMOJI_HOURGLASS} TEMP CLOSURES" if index == 0 else f"{EMOJI_HOURGLASS} MORE CLOSURES",
+            value=_dynamic_restricted_lines(chunk, empty="No temporary closure."),
+            inline=True,
+        )
+    if not dynamic_restricted:
+        embed.add_field(
+            name=f"{EMOJI_HOURGLASS} TEMP CLOSURES",
+            value="No temporary closure.",
+            inline=True,
+        )
     embed.add_field(
-        name="⏳ TEMPORARY CLOSURES",
-        value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
-        inline=False,
-    )
-    embed.add_field(
-        name="🧱 STATIC WATCHLIST",
-        value=_static_watchlist_lines(static_restricted, empty="No static watchlist entry."),
-        inline=False,
-    )
-    embed.add_field(
-        name="🟢 RECENTLY OPEN",
+        name=f"{EMOJI_GREEN} RECENTLY OPEN",
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
-        inline=False,
+        inline=True,
     )
+    for service, names in _static_watchlist_groups(static_restricted).items():
+        embed.add_field(
+            name=f"{EMOJI_BRICKS} WATCHLIST {service}",
+            value=", ".join(names),
+            inline=True,
+        )
+    if not static_restricted:
+        embed.add_field(
+            name=f"{EMOJI_BRICKS} STATIC WATCHLIST",
+            value="No static watchlist entry.",
+            inline=True,
+        )
     _append_source_field(embed, snapshot)
     embed.set_footer(text=FOOTER_TEXT)
     return embed
@@ -88,17 +117,17 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title="🌀 SOLANE API / CORRUPTION WATCH",
+        title=f"{EMOJI_CYCLONE} SOLANE API / CORRUPTION WATCH",
         description="Insurgency corruption level 4 and 5 systems.",
         color=PANEL_CORRUPTION,
     )
     embed.add_field(
-        name="🔵 LVL5 CRITICAL",
+        name=f"{EMOJI_BLUE} LVL5 CRITICAL",
         value=_corruption_lines(lvl5, empty="No LVL5 corruption detected."),
         inline=True,
     )
     embed.add_field(
-        name="🟣 LVL4 WATCH",
+        name=f"{EMOJI_PURPLE} LVL4 WATCH",
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
         inline=True,
     )
@@ -124,17 +153,21 @@ def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
     solane_status = str(service.get("label") or "Open")
 
     embed = _base_embed(
-        title="🟢 SOLANE API / SERVICE INTEL",
+        title=f"{EMOJI_GREEN} SOLANE API / SERVICE INTEL",
         description="Public service status for Solane Run operations.",
         color=PANEL_SERVICE,
     )
-    embed.add_field(name="🧠 API LINK", value=_service_value(api_state), inline=True)
-    embed.add_field(name="📡 EVE CLUSTER", value=_service_value(tranquility), inline=True)
-    embed.add_field(name="⏱️ ESI SYNC", value=_service_value(esi_sync), inline=True)
-    embed.add_field(name="🚚 SERVICE", value=_service_value(solane_status), inline=True)
-    embed.add_field(name="🧾 BUILD", value=_service_value(server_version), inline=True)
+    embed.add_field(name=f"{EMOJI_BRAIN} API LINK", value=_service_value(api_state), inline=True)
     embed.add_field(
-        name="🌀 CORRUPTION",
+        name=f"{EMOJI_SATELLITE_DISH} EVE CLUSTER",
+        value=_service_value(tranquility),
+        inline=True,
+    )
+    embed.add_field(name=f"{EMOJI_TIMER} ESI SYNC", value=_service_value(esi_sync), inline=True)
+    embed.add_field(name=f"{EMOJI_TRUCK} SERVICE", value=_service_value(solane_status), inline=True)
+    embed.add_field(name=f"{EMOJI_RECEIPT} BUILD", value=_service_value(server_version), inline=True)
+    embed.add_field(
+        name=f"{EMOJI_CYCLONE} CORRUPTION",
         value=_service_value(_count_label(overview, "corruption")),
         inline=True,
     )
@@ -156,7 +189,7 @@ def _base_embed(title: str, description: str, color: int) -> discord.Embed:
 def _append_source_field(embed: discord.Embed, snapshot: dict[str, Any]) -> None:
     update_time = _format_utc_time(_api_updated_at(snapshot))
     embed.add_field(
-        name="🔎 SOURCE",
+        name=f"{EMOJI_SOURCE} SOURCE",
         value=f"Last API update: `{update_time}`\nCheck our source: {SOURCE_URL}",
         inline=False,
     )
@@ -181,49 +214,44 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
     lines = []
-    for item in items[:10]:
+    for item in items[:6]:
         system = item.get("system") or {}
         name = system.get("name", "Unknown")
         kills = item.get("shipKillsLastHour")
         kills_text = kills if kills is not None else "?"
-        lines.append(f"• **{name}** · `{kills_text} kills/h` · monitored")
+        lines.append(f"**{name}** `{kills_text}/h`")
     return "\n".join(lines)
 
 
 def _dynamic_restricted_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
-    return "\n".join(_dynamic_restricted_item_label(item) for item in items[:8])
+    return "\n".join(_dynamic_restricted_item_label(item) for item in items)
 
 
 def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
     service = _short_service(item.get("serviceType")) or "Unknown"
     kills = item.get("shipKillsLastHour")
     signal = f"`{kills}/h`" if kills is not None else "`live`"
-    return f"• **{item.get('name', 'Unknown')}** · {service} · {signal}"
+    return f"**{item.get('name', 'Unknown')}** {service} {signal}"
 
 
-def _static_watchlist_lines(items: list[dict[str, Any]], empty: str) -> str:
-    if not items:
-        return empty
+def _static_watchlist_groups(items: list[dict[str, Any]]) -> dict[str, list[str]]:
     grouped: dict[str, list[str]] = {}
     for item in items[:14]:
         service = _short_service(item.get("serviceType")) or "Other"
         grouped.setdefault(service, []).append(str(item.get("name", "Unknown")))
-    return "\n".join(
-        f"**{service}** · {', '.join(names)}"
-        for service, names in grouped.items()
-    )
+    return grouped
 
 
 def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
     lines = []
-    for item in items[:8]:
+    for item in items[:4]:
         service = _short_service(item.get("serviceType"))
-        service_suffix = f" - {service}" if service else ""
-        lines.append(f"• **{item.get('name', 'Unknown')}**{service_suffix} · `Reopened`")
+        service_suffix = f" {service}" if service else ""
+        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} `Open`")
     return "\n".join(lines)
 
 
@@ -241,6 +269,10 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         suppression = round(float(item.get("suppressionPercentage") or 0))
         lines.append(f"**{name}**\n`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%`")
     return "\n".join(lines)
+
+
+def _chunks(items: list[dict[str, Any]], size: int) -> list[list[dict[str, Any]]]:
+    return [items[index:index + size] for index in range(0, len(items), size)]
 
 
 def _service_value(value: str) -> str:
