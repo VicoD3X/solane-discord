@@ -47,25 +47,32 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
     danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
     restricted = route_risk.get("restrictedSystems") or []
+    static_restricted = [item for item in restricted if item.get("source") == "static"]
+    dynamic_restricted = [item for item in restricted if item.get("source") != "static"]
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
         title="SOLANE API / ROUTE RISK",
-        description="HighSec danger pipes, Solane restrictions and reopening signals.",
+        description="Operational route watch for active pipe danger and Solane restrictions.",
         color=PANEL_ROUTE_RISK,
     )
     embed.add_field(
         name="HIGHSEC DANGER",
         value=_system_lines(danger, empty="No HighSec pipe in Danger."),
-        inline=True,
-    )
-    embed.add_field(
-        name="RESTRICTED SYSTEM",
-        value=_restricted_system_lines(restricted, empty="No restricted system."),
         inline=False,
     )
     embed.add_field(
-        name="RECENTLY OPEN SYSTEM",
+        name="TEMPORARY CLOSURES",
+        value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
+        inline=False,
+    )
+    embed.add_field(
+        name="STATIC WATCHLIST",
+        value=_static_watchlist_lines(static_restricted, empty="No static watchlist entry."),
+        inline=False,
+    )
+    embed.add_field(
+        name="RECENTLY OPEN",
         value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
@@ -179,38 +186,34 @@ def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
         name = system.get("name", "Unknown")
         kills = item.get("shipKillsLastHour")
         kills_text = kills if kills is not None else "?"
-        lines.append(f"**{name}**\n`{kills_text} kills/h` - monitored")
+        lines.append(f"• **{name}** · `{kills_text} kills/h` · monitored")
     return "\n".join(lines)
 
 
-def _restricted_system_lines(items: list[dict[str, Any]], empty: str) -> str:
+def _dynamic_restricted_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
-    static = [item for item in items if item.get("source") == "static"]
-    dynamic = [item for item in items if item.get("source") != "static"]
-    lines: list[str] = []
-    if dynamic:
-        lines.append("**Temporary closures**")
-        lines.extend(_restricted_item_label(item) for item in dynamic[:8])
-    if static:
-        if lines:
-            lines.append("")
-        static_items = (
-            _restricted_item_label(item, include_kills=False)
-            for item in static[:12]
-        )
-        lines.append("**Static watchlist**")
-        lines.append(", ".join(static_items))
-    return "\n".join(lines)
+    return "\n".join(_dynamic_restricted_item_label(item) for item in items[:8])
 
 
-def _restricted_item_label(item: dict[str, Any], include_kills: bool = True) -> str:
-    service = _short_service(item.get("serviceType"))
-    suffix = f" ({service})" if service else ""
+def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
+    service = _short_service(item.get("serviceType")) or "Unknown"
     kills = item.get("shipKillsLastHour")
-    if include_kills and kills is not None:
-        suffix = f"{suffix} `{kills}/h`"
-    return f"**{item.get('name', 'Unknown')}**{suffix}"
+    signal = f"`{kills}/h`" if kills is not None else "`live`"
+    return f"• **{item.get('name', 'Unknown')}** · {service} · {signal}"
+
+
+def _static_watchlist_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    grouped: dict[str, list[str]] = {}
+    for item in items[:14]:
+        service = _short_service(item.get("serviceType")) or "Other"
+        grouped.setdefault(service, []).append(str(item.get("name", "Unknown")))
+    return "\n".join(
+        f"**{service}** · {', '.join(names)}"
+        for service, names in grouped.items()
+    )
 
 
 def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
@@ -220,7 +223,7 @@ def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
     for item in items[:8]:
         service = _short_service(item.get("serviceType"))
         service_suffix = f" - {service}" if service else ""
-        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix}\n`Reopened`")
+        lines.append(f"• **{item.get('name', 'Unknown')}**{service_suffix} · `Reopened`")
     return "\n".join(lines)
 
 
