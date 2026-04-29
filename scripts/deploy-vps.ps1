@@ -111,7 +111,7 @@ try {
       Invoke-External ".venv\Scripts\python.exe" @("-m", "ruff", "check", ".") $repo
       Invoke-External ".venv\Scripts\python.exe" @("-m", "pytest") $repo
       Invoke-External ".venv\Scripts\python.exe" @("-m", "compileall", "-q", "solane_ai", "tests") $repo
-      Invoke-External "docker" @("compose", "config") $repo
+      Invoke-External "docker" @("compose", "config", "--quiet") $repo
     }
   } else {
     Write-Host "SkipChecks enabled; local verification skipped." -ForegroundColor Yellow
@@ -168,6 +168,7 @@ test -f "$BASE/repo/bot.new/Dockerfile"
 rm -rf "$BASE/repo/bot.previous"
 [ -d "$BASE/repo/bot" ] && mv "$BASE/repo/bot" "$BASE/repo/bot.previous"
 mv "$BASE/repo/bot.new" "$BASE/repo/bot"
+install -m 600 "$BOT_ENV" "$BASE/repo/bot/.env"
 
 if ! docker network inspect solane-run >/dev/null 2>&1; then
   docker network create solane-run >/dev/null
