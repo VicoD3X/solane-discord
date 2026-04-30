@@ -107,6 +107,10 @@ class BotState:
             if previous is not None:
                 record.closed_at = previous.closed_at or previous.last_seen_at or timestamp
             current[key] = record
+
+        for key in current:
+            self.recently_open_systems.pop(key, None)
+
         opened_keys = set(self.dynamic_restricted_systems) - set(current)
         for key in opened_keys:
             record = self.dynamic_restricted_systems[key]
