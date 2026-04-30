@@ -90,7 +90,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
     assert "Uedama" in panels[0].embed.fields[0].value
     assert panels[0].embed.color.value == 0x7AAACE
-    assert "TEMP CLOSURES" in panels[0].embed.fields[1].name
+    assert "TEMP RESTRICTED" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
     assert "closed" in panels[0].embed.fields[1].value
     assert "RECENTLY OPEN" in panels[0].embed.fields[2].name

@@ -79,7 +79,7 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=True,
     )
     embed.add_field(
-        name=f"{EMOJI_HOURGLASS} TEMP CLOSURES",
+        name=f"{EMOJI_HOURGLASS} TEMP RESTRICTED",
         value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
         inline=False,
     )
