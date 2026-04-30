@@ -67,6 +67,10 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         item for item in restricted if item.get("source") != "static"
     ]
     recently_open = snapshot.get("recentlyOpenSystems") or []
+    corruption_items = ((overview.get("corruption") or {}).get("items") or []) if overview else []
+    corruption_restricted = [
+        item for item in corruption_items if int(item.get("corruptionState") or 0) >= 4
+    ]
 
     embed = _base_embed(
         title=f"{EMOJI_SATELLITE} SOLANE API / ROUTE RISK",
@@ -84,13 +88,18 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     embed.add_field(
-        name=f"{EMOJI_GREEN} RECENTLY OPEN",
-        value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
+        name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
+        value=_static_watchlist_lines(static_restricted),
         inline=False,
     )
     embed.add_field(
-        name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
-        value=_static_watchlist_lines(static_restricted),
+        name=f"{EMOJI_CYCLONE} CORRUPTION RESTRICTED",
+        value=_corruption_restricted_lines(corruption_restricted),
+        inline=False,
+    )
+    embed.add_field(
+        name=f"{EMOJI_GREEN} RECENTLY OPEN",
+        value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
         inline=False,
     )
     _append_source_field(embed, snapshot)
@@ -234,6 +243,27 @@ def _static_watchlist_lines(items: list[dict[str, Any]]) -> str:
 
     names = sorted(str(item.get("name", "Unknown")) for item in items)
     return " • ".join(f"**{name}**" for name in names)
+
+
+def _corruption_restricted_lines(items: list[dict[str, Any]]) -> str:
+    if not items:
+        return "No corruption restriction."
+
+    ordered = sorted(
+        items,
+        key=lambda item: (
+            -int(item.get("corruptionState") or 0),
+            -float(item.get("corruptionPercentage") or 0),
+            str((item.get("system") or {}).get("name") or "Unknown"),
+        ),
+    )
+    labels = []
+    for item in ordered:
+        system = item.get("system") or {}
+        name = system.get("name", "Unknown")
+        corruption = round(float(item.get("corruptionPercentage") or 0))
+        labels.append(f"**{name}** `{corruption}%`")
+    return " • ".join(labels)
 
 
 def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
