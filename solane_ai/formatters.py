@@ -66,7 +66,6 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     dynamic_restricted = snapshot.get("activeRestrictedSystems") or [
         item for item in restricted if item.get("source") != "static"
     ]
-    safety_hold = route_risk.get("safetyHoldSystems") or []
     recently_open = snapshot.get("recentlyOpenSystems") or []
 
     embed = _base_embed(
@@ -82,11 +81,6 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     embed.add_field(
         name=f"{EMOJI_HOURGLASS} TEMP CLOSURES",
         value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_TIMER} SAFETY HOLD WATCH",
-        value=_safety_hold_lines(safety_hold, empty="No 24H hold watch signal."),
         inline=False,
     )
     embed.add_field(
@@ -232,21 +226,6 @@ def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
     service = _short_service(item.get("serviceType")) or "Unknown"
     duration = _closed_duration_label(item.get("closedAt"))
     return f"**{item.get('name', 'Unknown')}** {service} `{duration}`"
-
-
-def _safety_hold_lines(items: list[dict[str, Any]], empty: str) -> str:
-    if not items:
-        return empty
-    ordered = sorted(
-        items,
-        key=lambda item: (-(int(item.get("score") or 0)), str(item.get("name", "Unknown"))),
-    )
-    lines = []
-    for item in ordered[:10]:
-        service = _short_service(item.get("serviceType")) or "Unknown"
-        label = str(item.get("label") or "24H Watch")
-        lines.append(f"**{item.get('name', 'Unknown')}** {service} `{label}`")
-    return "\n".join(lines)
 
 
 def _static_watchlist_lines(items: list[dict[str, Any]]) -> str:

@@ -34,18 +34,6 @@ def test_build_panels_from_route_intel_snapshot() -> None:
                 ],
                 "staticRestrictedSystems": [],
                 "dynamicRestrictedSystems": [],
-                "safetyHoldSystems": [
-                    {
-                        "id": 30002652,
-                        "name": "Ala",
-                        "serviceType": "Pochven",
-                        "source": "rolling_24h",
-                        "reason": "Major Pochven 24H PVP activity detected.",
-                        "level": "flashpoint",
-                        "label": "Flashpoint 24H",
-                        "score": 28,
-                    },
-                ],
             },
             "service": {"status": "open", "label": "Open"},
         },
@@ -105,17 +93,14 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "TEMP CLOSURES" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
     assert "closed" in panels[0].embed.fields[1].value
-    assert "SAFETY HOLD WATCH" in panels[0].embed.fields[2].name
-    assert "Ala" in panels[0].embed.fields[2].value
-    assert "Flashpoint 24H" in panels[0].embed.fields[2].value
-    assert "RECENTLY OPEN" in panels[0].embed.fields[3].name
-    assert panels[0].embed.fields[4].name.endswith("PERMA RESTRICTED")
-    assert "Ahbazon" in panels[0].embed.fields[4].value
-    assert "Niarja" in panels[0].embed.fields[4].value
-    assert "PERMA RESTRICTED Pochven" not in panels[0].embed.fields[4].name
-    assert "SOURCE" in panels[0].embed.fields[5].name
-    assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[5].value
-    assert "https://solane-run.app/route-intel" in panels[0].embed.fields[5].value
+    assert "RECENTLY OPEN" in panels[0].embed.fields[2].name
+    assert panels[0].embed.fields[3].name.endswith("PERMA RESTRICTED")
+    assert "Ahbazon" in panels[0].embed.fields[3].value
+    assert "Niarja" in panels[0].embed.fields[3].value
+    assert "PERMA RESTRICTED Pochven" not in panels[0].embed.fields[3].name
+    assert "SOURCE" in panels[0].embed.fields[4].name
+    assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[4].value
+    assert "https://solane-run.app/route-intel" in panels[0].embed.fields[4].value
     assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value

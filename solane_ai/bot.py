@@ -53,28 +53,17 @@ class SolaneAIBot(discord.Client):
             if isinstance(route_risk, dict)
             else None
         )
-        safety_hold_items = route_risk.get("safetyHoldSystems", []) if isinstance(route_risk, dict) else []
-        safety_hold_ids = {
-            int(item["id"])
-            for item in safety_hold_items
-            if isinstance(item, dict) and item.get("id") is not None
-        }
-        for system_id in safety_hold_ids:
-            self.state.recently_open_systems.pop(str(system_id), None)
         if isinstance(bot_summary, dict) and isinstance(dynamic_restricted, list):
             recently_open = self.state.update_dynamic_restrictions(
                 dynamic_restricted,
                 bot_summary.get("generatedAt"),
             )
-            for system_id in safety_hold_ids:
-                self.state.recently_open_systems.pop(str(system_id), None)
             snapshot["activeRestrictedSystems"] = [
                 record.to_payload() for record in self.state.active_restrictions()
             ]
             snapshot["recentlyOpenSystems"] = [
                 record.to_payload()
                 for record in recently_open
-                if record.system_id not in safety_hold_ids
             ]
         panels = build_panels(snapshot)
         for panel in panels:
