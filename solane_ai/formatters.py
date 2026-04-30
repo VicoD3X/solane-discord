@@ -62,11 +62,13 @@ def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
     crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
     danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
     restricted = route_risk.get("restrictedSystems") or []
-    static_restricted = [item for item in restricted if item.get("source") == "static"]
-    dynamic_restricted = snapshot.get("activeRestrictedSystems") or [
-        item for item in restricted if item.get("source") != "static"
-    ]
-    recently_open = snapshot.get("recentlyOpenSystems") or []
+    static_restricted = route_risk.get("staticRestrictedSystems")
+    if not static_restricted:
+        static_restricted = [
+            item for item in restricted if item.get("source") == "static"
+        ]
+    dynamic_restricted = route_risk.get("dynamicRestrictedSystems") or []
+    recently_open = route_risk.get("recentlyOpenSystems") or []
     corruption_items = ((overview.get("corruption") or {}).get("items") or []) if overview else []
     corruption_restricted = [
         item for item in corruption_items if int(item.get("corruptionState") or 0) >= 4

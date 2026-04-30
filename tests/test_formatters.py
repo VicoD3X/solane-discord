@@ -33,7 +33,18 @@ def test_build_panels_from_route_intel_snapshot() -> None:
                     },
                 ],
                 "staticRestrictedSystems": [],
-                "dynamicRestrictedSystems": [],
+                "dynamicRestrictedSystems": [
+                    {
+                        "id": 30002813,
+                        "name": "Tama",
+                        "serviceType": "LowSec",
+                        "shipKillsLastHour": 20,
+                        "closedAt": "2026-04-29T07:30:00+00:00",
+                    },
+                ],
+                "recentlyOpenSystems": [
+                    {"id": 30002510, "name": "Old Man Star", "serviceType": "LowSec"},
+                ],
             },
             "service": {"status": "open", "label": "Open"},
         },
@@ -73,18 +84,6 @@ def test_build_panels_from_route_intel_snapshot() -> None:
             },
         },
         "errors": [],
-        "recentlyOpenSystems": [
-            {"systemId": 30002510, "name": "Old Man Star", "serviceType": "LowSec"},
-        ],
-        "activeRestrictedSystems": [
-            {
-                "systemId": 30002813,
-                "name": "Tama",
-                "serviceType": "LowSec",
-                "shipKillsLastHour": 20,
-                "closedAt": "2026-04-29T07:30:00+00:00",
-            },
-        ],
     })
 
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
