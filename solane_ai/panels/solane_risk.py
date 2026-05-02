@@ -22,7 +22,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
 
     embed = discord.Embed(
         title="SOLANE RISK / GLOBAL WATCH",
-        description="Operational route watch for active pipe danger and Critical EVE risk signals.",
+        description="Operational route watch for active pipe danger and elevated EVE risk signals.",
         color=PANEL_ROUTE_RISK,
         timestamp=datetime.now(UTC),
     )
@@ -30,7 +30,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         name=f"{EMOJI_WARNING} HIGHSEC DANGER",
         value=_critical_lines(
             route_risk.get("highSecCriticalSystems") or [],
-            empty="No HighSec pipe in Critical.",
+            empty="No HighSec pipe flagged.",
         ),
         inline=True,
     )
@@ -38,7 +38,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         name=f"{EMOJI_ALERT} LOW-SEC CRITICAL",
         value=_critical_lines(
             route_risk.get("lowSecCriticalSystems") or [],
-            empty="No Low-Sec Critical system.",
+            empty="No Low-Sec system flagged.",
         ),
         inline=False,
     )
@@ -46,7 +46,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         name=f"{EMOJI_TRIANGLE} POCHVEN CRITICAL",
         value=_critical_lines(
             route_risk.get("pochvenCriticalSystems") or [],
-            empty="No Pochven Critical system.",
+            empty="No Pochven system flagged.",
         ),
         inline=False,
     )
@@ -116,7 +116,7 @@ def _critical_item_line(item: dict[str, Any]) -> str:
     service_suffix = f" {service}" if service else ""
     kills = _kills_label(item.get("shipKillsLastHour"))
     duration = _critical_duration_label(item.get("criticalAt"))
-    return f"**{item.get('name', 'Unknown')}**{service_suffix} `{kills}` `{duration}`"
+    return f"**{item.get('name', 'Unknown')}**{service_suffix} `{kills}` | `{duration}`"
 
 
 def _corruption_lines(items: list[dict[str, Any]]) -> str:
@@ -145,8 +145,8 @@ def _thera_status_line(item: Any) -> str:
     kills = _kills_label(item.get("shipKillsLastHour"))
     duration = ""
     if _lower(item.get("level")) == "critical":
-        duration = f" `{_critical_duration_label(item.get('criticalAt'))}`"
-    return f"**{item.get('name') or 'Thera'}** `{status}` `{kills}`{duration}"
+        duration = f" | `{_critical_duration_label(item.get('criticalAt'))}`"
+    return f"**{item.get('name') or 'Thera'}** `{status}` | `{kills}`{duration}"
 
 
 def _recently_safer_lines(items: list[dict[str, Any]], empty: str) -> str:
@@ -158,7 +158,7 @@ def _recently_safer_lines(items: list[dict[str, Any]], empty: str) -> str:
         service_suffix = f" {service}" if service else ""
         kills = _kills_label(item.get("shipKillsLastHour"))
         safer = _safer_duration_label(item.get("saferAt"))
-        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} `{kills}` `{safer}`")
+        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} `{kills}` | `{safer}`")
     return "\n".join(lines)
 
 
@@ -171,16 +171,16 @@ def _kills_label(value: Any) -> str:
 def _critical_duration_label(value: Any) -> str:
     parsed = _parse_time(value)
     if parsed is None:
-        return "critical"
+        return "flagged"
 
     minutes = max(int((datetime.now(UTC) - parsed).total_seconds() // 60), 0)
     if minutes < 60:
-        return f"critical {minutes} min"
+        return f"flagged {minutes} min"
 
     hours, remainder = divmod(minutes, 60)
     if remainder == 0:
-        return f"critical {hours}h"
-    return f"critical {hours}h {remainder}m"
+        return f"flagged {hours}h"
+    return f"flagged {hours}h {remainder}m"
 
 
 def _safer_duration_label(value: Any) -> str:

@@ -17,13 +17,13 @@ SOLANE_RED = 0xDB1A1A
 SOLANE_ORANGE = 0xFFC81E
 SOLANE_GREEN = 0x67C090
 PANEL_CORRUPTION = 0x1A2CA3
-SOURCE_URL = "https://solane-run.app/route-intel"
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
 EMOJI_SOURCE = "\U0001F50E"
 EMOJI_CYCLONE = "\U0001F300"
 EMOJI_BLUE = "\U0001F535"
 EMOJI_PURPLE = "\U0001F7E3"
+EMOJI_GREEN = "\U0001F7E2"
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class PanelMessage:
 def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
     return [
         PanelMessage("risk", "SOLANE RISK / GLOBAL WATCH", build_solane_risk_embed(snapshot)),
-        PanelMessage("corruption", "SOLANE API - Corruption Watch", build_corruption_embed(snapshot)),
+        PanelMessage("corruption", "SOLANE RISK / INSURGENCY WATCH", build_corruption_embed(snapshot)),
         PanelMessage("service", "SOLANE ENGINE ETA", build_engine_eta_embed(snapshot)),
     ]
 
@@ -49,11 +49,12 @@ def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
 def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     overview = _overview(snapshot)
     items = ((overview.get("corruption") or {}).get("items") or []) if overview else []
+    recovered = ((overview.get("corruption") or {}).get("recentlyRecoveredSystems") or []) if overview else []
     lvl5 = [item for item in items if int(item.get("corruptionState") or 0) >= 5]
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title=f"{EMOJI_CYCLONE} SOLANE API / CORRUPTION WATCH",
+        title=f"{EMOJI_CYCLONE} SOLANE RISK / INSURGENCY WATCH",
         description="Insurgency corruption level 4 and 5 systems.",
         color=PANEL_CORRUPTION,
     )
@@ -66,6 +67,11 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
         name=f"{EMOJI_PURPLE} LVL4 WATCH",
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
         inline=True,
+    )
+    embed.add_field(
+        name=f"{EMOJI_GREEN} RECENTLY RECOVER",
+        value=_recovered_lines(recovered, empty="No recently recovered system."),
+        inline=False,
     )
     _append_source_field(embed, snapshot)
     embed.set_footer(text=FOOTER_TEXT)
@@ -86,7 +92,7 @@ def _append_source_field(embed: discord.Embed, snapshot: dict[str, Any]) -> None
     update_time = _format_utc_time(_api_updated_at(snapshot))
     embed.add_field(
         name=f"{EMOJI_SOURCE} SOURCE",
-        value=f"Last API update: `{update_time}`\nCheck our source: {SOURCE_URL}",
+        value=f"Last API update: `{update_time}`",
         inline=False,
     )
 
@@ -118,8 +124,55 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         level = item.get("corruptionState", "?")
         corruption = round(float(item.get("corruptionPercentage") or 0))
         suppression = round(float(item.get("suppressionPercentage") or 0))
-        lines.append(f"**{name}**\n`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%`")
+        kills = _kills_label(item.get("shipKillsLastHour"))
+        fw_status = item.get("fwStatus") or "FW Unknown"
+        lines.append(
+            f"**{name}**\n"
+            f"`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%` - `{kills}`\n"
+            f"`{fw_status}`"
+        )
     return "\n".join(lines)
+
+
+def _recovered_lines(items: list[dict[str, Any]], empty: str) -> str:
+    if not items:
+        return empty
+    lines = []
+    for item in items[:8]:
+        system = item.get("system") or {}
+        name = system.get("name", "Unknown")
+        service = _short_service(system.get("serviceType"))
+        service_prefix = f"{service} - " if service else ""
+        status = item.get("currentStatus") or "Empire Status"
+        previous = item.get("previousCorruptionState", "?")
+        kills = _kills_label(item.get("shipKillsLastHour"))
+        fw_status = item.get("fwStatus") or "FW Unknown"
+        daily_check = _latest_daily_check_label(item)
+        lines.append(
+            f"**{name}**\n"
+            f"`{service_prefix}{status}` - `from LVL{previous}` - `{kills}`\n"
+            f"`{fw_status}`{daily_check}"
+        )
+    return "\n".join(lines)
+
+
+def _latest_daily_check_label(item: dict[str, Any]) -> str:
+    daily_checks = item.get("dailyChecks") or []
+    if not daily_checks:
+        return ""
+    latest = daily_checks[-1]
+    if not isinstance(latest, dict):
+        return ""
+    date = latest.get("date") or "daily"
+    status = latest.get("currentStatus") or "Empire Status"
+    trend = latest.get("trend") or "tracked"
+    return f"\n`Daily {date}: {status} / {trend}`"
+
+
+def _kills_label(value: Any) -> str:
+    if value is None:
+        return "? kills/h"
+    return f"{value} kills/h"
 
 
 def _count_label(overview: dict[str, Any], key: str) -> str:

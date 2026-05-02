@@ -115,13 +115,43 @@ def _snapshot() -> dict:
                         "corruptionState": 5,
                         "corruptionPercentage": 88.4,
                         "suppressionPercentage": 12.0,
+                        "shipKillsLastHour": 14,
+                        "fwStatus": "Angel vs Amarr",
                         "system": {"name": "Siseide", "serviceType": "HighSec"},
                     },
                     {
                         "corruptionState": 4,
                         "corruptionPercentage": 55.5,
                         "suppressionPercentage": 5.0,
+                        "shipKillsLastHour": 8,
+                        "fwStatus": "Angel vs Amarr",
                         "system": {"name": "Turnur", "serviceType": "LowSec"},
+                    },
+                ],
+                "recentlyRecoveredSystems": [
+                    {
+                        "system": {"name": "Auga", "serviceType": "LowSec"},
+                        "previousCorruptionState": 5,
+                        "currentCorruptionState": 3,
+                        "currentStatus": "LVL3",
+                        "shipKillsLastHour": 2,
+                        "fwStatus": "Angel vs Amarr",
+                        "recoveredAt": "2026-04-29T07:30:00+00:00",
+                        "dailyChecks": [
+                            {
+                                "date": "2026-04-30",
+                                "currentStatus": "LVL3",
+                                "trend": "stable",
+                            }
+                        ],
+                    },
+                    {
+                        "system": {"name": "Quiet", "serviceType": "LowSec"},
+                        "previousCorruptionState": 4,
+                        "currentStatus": "Empire Status",
+                        "shipKillsLastHour": None,
+                        "fwStatus": "Angel vs Empire",
+                        "recoveredAt": "2026-04-29T07:40:00+00:00",
                     },
                 ],
             },
@@ -140,10 +170,14 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "HIGHSEC DANGER" in panels[0].embed.fields[0].name
     assert "Uedama" in panels[0].embed.fields[0].value
     assert "19 kills/h" in panels[0].embed.fields[0].value
-    assert "critical" in panels[0].embed.fields[0].value
+    assert " | " in panels[0].embed.fields[0].value
+    assert "flagged" in panels[0].embed.fields[0].value
+    assert "critical" not in panels[0].embed.fields[0].value
     assert "LOW-SEC CRITICAL" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
     assert "20 kills/h" in panels[0].embed.fields[1].value
+    assert " | " in panels[0].embed.fields[1].value
+    assert "flagged" in panels[0].embed.fields[1].value
     assert "closed" not in panels[0].embed.fields[1].value
     assert "POCHVEN CRITICAL" in panels[0].embed.fields[2].name
     assert "Niarja" in panels[0].embed.fields[2].value
@@ -163,9 +197,24 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Check our source" not in panels[0].embed.fields[6].value
     assert "https://solane-run.app/route-intel" not in panels[0].embed.fields[6].value
     assert "RESTRICTED" not in " ".join(field.name for field in panels[0].embed.fields)
+    assert panels[1].title == "SOLANE RISK / INSURGENCY WATCH"
+    assert "SOLANE RISK / INSURGENCY WATCH" in panels[1].embed.title
     assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value
+    assert "14 kills/h" in panels[1].embed.fields[0].value
+    assert "Angel vs Amarr" in panels[1].embed.fields[0].value
+    assert "Turnur" in panels[1].embed.fields[1].value
+    assert "8 kills/h" in panels[1].embed.fields[1].value
+    assert "RECENTLY RECOVER" in panels[1].embed.fields[2].name
+    assert "Auga" in panels[1].embed.fields[2].value
+    assert "LVL3" in panels[1].embed.fields[2].value
+    assert "Daily 2026-04-30: LVL3 / stable" in panels[1].embed.fields[2].value
+    assert "Quiet" in panels[1].embed.fields[2].value
+    assert "Empire Status" in panels[1].embed.fields[2].value
+    assert "SOURCE" in panels[1].embed.fields[3].name
+    assert "Check our source" not in panels[1].embed.fields[3].value
+    assert "https://solane-run.app/route-intel" not in panels[1].embed.fields[3].value
     assert panels[2].embed.color.value == 0x17C079
     assert panels[2].title == "SOLANE ENGINE ETA"
     assert "SOLANE ENGINE ETA" in panels[2].embed.title
