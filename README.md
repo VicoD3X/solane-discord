@@ -6,13 +6,16 @@
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-a855f7)
 
-**SOLANE API** is the Discord intel companion for **Solane Run**, a premium EVE
-Online freight service. The bot publishes clean, persistent Discord embeds for
-route risk, HighSec danger, corruption watch and service status.
+**SOLANE API** is the Discord intel companion for **Solane Run**. The public
+calculator is closed; the bot is now the main visible product surface and acts
+as a daily EVE hauling intel copilot.
+
+It publishes clean, persistent Discord embeds for route risk, HighSec danger,
+corruption watch and service status.
 
 SOLANE API is intentionally a thin public client. The private Solane API remains
-the source of truth for ESI, zKillboard, route risk, pricing policy and internal
-freight logic.
+the source of truth for ESI, zKillboard, route risk, corruption intel and all
+operational rules.
 
 ```text
 EVE ESI / zKillboard / CCP web
@@ -30,7 +33,7 @@ EVE ESI / zKillboard / CCP web
 - Route risk feed for HighSec danger, restricted systems and reopened systems.
 - Corruption LVL4/LVL5 watch.
 - Service board for Solane API and Tranquility status.
-- Public-safe implementation with no Discord token or private pricing logic.
+- Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
 - Docker-ready deployment for the Solane Run VPS network.
 
 ## Beta Panels
@@ -48,8 +51,8 @@ This repository is safe to keep public because it does **not** contain:
 - Discord bot tokens.
 - Solane API secrets.
 - Private ESI credentials.
-- Pricing formulas.
 - Risk formulas.
+- Pricing formulas or legacy calculator logic.
 
 All sensitive logic belongs in the private `solane-api` service.
 
