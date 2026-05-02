@@ -29,6 +29,47 @@ def _snapshot() -> dict:
                         "criticalAt": "2026-04-29T07:10:00+00:00",
                     },
                 ],
+                "pipesControlSystems": [
+                    {
+                        "id": 30002768,
+                        "name": "Uedama",
+                        "serviceType": "HighSec",
+                        "securityDisplay": "0.5",
+                        "level": "critical",
+                        "label": "Critical",
+                        "shipKillsLastHour": 19,
+                        "lastSyncedAt": "2026-04-29T08:00:00+00:00",
+                        "topGate": {
+                            "id": 500000,
+                            "name": "Tama",
+                            "destinationSystemId": 30002813,
+                            "destinationSystemName": "Tama",
+                            "killsLastHour": 2,
+                        },
+                    },
+                    {
+                        "id": 30002770,
+                        "name": "Sivala",
+                        "serviceType": "HighSec",
+                        "securityDisplay": "0.6",
+                        "level": "watched",
+                        "label": "Watched",
+                        "shipKillsLastHour": 8,
+                        "lastSyncedAt": "2026-04-29T08:00:00+00:00",
+                        "topGate": {"name": "Clear", "killsLastHour": 0},
+                    },
+                    {
+                        "id": 30000144,
+                        "name": "Perimeter",
+                        "serviceType": "HighSec",
+                        "securityDisplay": "1.0",
+                        "level": "safe",
+                        "label": "Safe",
+                        "shipKillsLastHour": 0,
+                        "lastSyncedAt": "2026-04-29T08:00:00+00:00",
+                        "topGate": {"name": "Clear", "killsLastHour": 0},
+                    },
+                ],
                 "lowSecCriticalSystems": [
                     {
                         "id": 30002813,
@@ -159,7 +200,7 @@ def _snapshot() -> dict:
 def test_build_panels_from_route_intel_snapshot() -> None:
     panels = build_panels(_snapshot())
 
-    assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
+    assert [panel.key for panel in panels] == ["risk", "pipes", "corruption", "service"]
     assert panels[0].title == "SOLANE RISK / GLOBAL WATCH"
     assert panels[0].embed.title == "SOLANE RISK / GLOBAL WATCH"
     assert panels[0].embed.color.value == 0x7AAACE
@@ -196,47 +237,73 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Check our source" not in panels[0].embed.fields[6].value
     assert "https://solane-run.app/route-intel" not in panels[0].embed.fields[6].value
     assert "RESTRICTED" not in " ".join(field.name for field in panels[0].embed.fields)
-    assert panels[1].title == "SOLANE RISK / INSURGENCY WATCH"
-    assert "SOLANE RISK / INSURGENCY WATCH" in panels[1].embed.title
-    assert panels[1].embed.color.value == 0x1A2CA3
-    assert "Siseide" in panels[1].embed.fields[0].value
-    assert "HS" in panels[1].embed.fields[0].value
-    assert "14 kills/h" in panels[1].embed.fields[0].value
-    assert "Angel vs Amarr" in panels[1].embed.fields[0].value
-    assert "Turnur" in panels[1].embed.fields[1].value
-    assert "8 kills/h" in panels[1].embed.fields[1].value
-    assert "RECENTLY RECOVER" in panels[1].embed.fields[2].name
-    assert "Auga" in panels[1].embed.fields[2].value
-    assert "LVL3" in panels[1].embed.fields[2].value
-    assert "Daily 2026-04-30: LVL3 / stable" in panels[1].embed.fields[2].value
-    assert "Quiet" in panels[1].embed.fields[2].value
-    assert "Empire Status" in panels[1].embed.fields[2].value
+    assert panels[1].title == "SOLANE RISK / PIPES CONTROL"
+    assert panels[1].embed.title == "SOLANE RISK / PIPES CONTROL"
+    assert panels[1].embed.color.value == 0x1A1953
+    assert panels[1].embed.fields[0].name == "\U0001F534 CRITICAL"
+    assert "PIPE" in panels[1].embed.fields[0].value
+    assert "STAT" in panels[1].embed.fields[0].value
+    assert "KILLS/H" in panels[1].embed.fields[0].value
+    assert "HOT GATE" in panels[1].embed.fields[0].value
+    assert "Uedama" in panels[1].embed.fields[0].value
+    assert "CRIT" in panels[1].embed.fields[0].value
+    assert "19" in panels[1].embed.fields[0].value
+    assert "Tama (2)" in panels[1].embed.fields[0].value
+    assert panels[1].embed.fields[1].name == "\U0001F7E1 WATCHED"
+    assert "Sivala" in panels[1].embed.fields[1].value
+    assert "WATCH" in panels[1].embed.fields[1].value
+    assert "Clear" in panels[1].embed.fields[1].value
+    assert panels[1].embed.fields[2].name == "\U0001F7E2 STABLE"
+    assert "Perimeter" in panels[1].embed.fields[2].value
+    assert "SAFE" in panels[1].embed.fields[2].value
     assert "SOURCE" in panels[1].embed.fields[3].name
-    assert "Check our source" not in panels[1].embed.fields[3].value
-    assert "https://solane-run.app/route-intel" not in panels[1].embed.fields[3].value
-    assert panels[2].embed.color.value == 0x17C079
-    assert panels[2].title == "SOLANE ENGINE ETA"
-    assert "SOLANE ENGINE ETA" in panels[2].embed.title
-    assert panels[2].embed.fields[1].name.startswith("\U0001F310")
-    assert "18,000 pilots" in panels[2].embed.fields[1].value
-    assert "ESI SYNC" in panels[2].embed.fields[2].name
-    assert "CLUSTER MODE" in panels[2].embed.fields[6].name
-    assert panels[2].embed.fields[6].value == "`Online`"
-    assert "CLUSTER UPTIME" in panels[2].embed.fields[7].name
-    assert "ESI FEED" in panels[2].embed.fields[8].name
-    assert panels[2].embed.fields[8].value == "`Fresh`"
-    assert "SOURCE" in panels[2].embed.fields[9].name
-    assert "Last API update: `08:00 EVE`" in panels[2].embed.fields[9].value
-    assert "Check our source" not in panels[2].embed.fields[9].value
-    assert "https://solane-run.app/route-intel" not in panels[2].embed.fields[9].value
-    assert panels[2].embed.footer.text == "Data from Solane Engine - status.eveonline.com"
+    assert "Last API update: `08:00 EVE`" in panels[1].embed.fields[3].value
+    assert "pod" not in " ".join(
+        [panels[1].embed.title, panels[1].embed.description or ""]
+        + [field.name for field in panels[1].embed.fields]
+        + [field.value for field in panels[1].embed.fields]
+    ).lower()
+    assert panels[2].title == "SOLANE RISK / INSURGENCY WATCH"
+    assert "SOLANE RISK / INSURGENCY WATCH" in panels[2].embed.title
+    assert panels[2].embed.color.value == 0x1A2CA3
+    assert "Siseide" in panels[2].embed.fields[0].value
+    assert "HS" in panels[2].embed.fields[0].value
+    assert "14 kills/h" in panels[2].embed.fields[0].value
+    assert "Angel vs Amarr" in panels[2].embed.fields[0].value
+    assert "Turnur" in panels[2].embed.fields[1].value
+    assert "8 kills/h" in panels[2].embed.fields[1].value
+    assert "RECENTLY RECOVER" in panels[2].embed.fields[2].name
+    assert "Auga" in panels[2].embed.fields[2].value
+    assert "LVL3" in panels[2].embed.fields[2].value
+    assert "Daily 2026-04-30: LVL3 / stable" in panels[2].embed.fields[2].value
+    assert "Quiet" in panels[2].embed.fields[2].value
+    assert "Empire Status" in panels[2].embed.fields[2].value
+    assert "SOURCE" in panels[2].embed.fields[3].name
+    assert "Check our source" not in panels[2].embed.fields[3].value
+    assert "https://solane-run.app/route-intel" not in panels[2].embed.fields[3].value
+    assert panels[3].embed.color.value == 0x17C079
+    assert panels[3].title == "SOLANE ENGINE ETA"
+    assert "SOLANE ENGINE ETA" in panels[3].embed.title
+    assert panels[3].embed.fields[1].name.startswith("\U0001F310")
+    assert "18,000 pilots" in panels[3].embed.fields[1].value
+    assert "ESI SYNC" in panels[3].embed.fields[2].name
+    assert "CLUSTER MODE" in panels[3].embed.fields[6].name
+    assert panels[3].embed.fields[6].value == "`Online`"
+    assert "CLUSTER UPTIME" in panels[3].embed.fields[7].name
+    assert "ESI FEED" in panels[3].embed.fields[8].name
+    assert panels[3].embed.fields[8].value == "`Fresh`"
+    assert "SOURCE" in panels[3].embed.fields[9].name
+    assert "Last API update: `08:00 EVE`" in panels[3].embed.fields[9].value
+    assert "Check our source" not in panels[3].embed.fields[9].value
+    assert "https://solane-run.app/route-intel" not in panels[3].embed.fields[9].value
+    assert panels[3].embed.footer.text == "Data from Solane Engine - status.eveonline.com"
 
 
 def test_engine_eta_turns_red_during_eve_vip_mode() -> None:
     snapshot = deepcopy(_snapshot())
     snapshot["eveStatus"]["vip"] = True
 
-    panel = build_panels(snapshot)[2]
+    panel = build_panels(snapshot)[3]
 
     assert panel.key == "service"
     assert panel.embed.color.value == 0xFF1A1A
@@ -248,7 +315,7 @@ def test_engine_eta_turns_red_when_eve_status_is_unavailable() -> None:
     snapshot = deepcopy(_snapshot())
     snapshot["eveStatus"] = None
 
-    panel = build_panels(snapshot)[2]
+    panel = build_panels(snapshot)[3]
 
     assert panel.embed.color.value == 0xFF1A1A
     assert panel.embed.fields[6].value == "`Unavailable`"
@@ -259,7 +326,7 @@ def test_engine_eta_turns_red_when_eve_status_feed_errors() -> None:
     snapshot = deepcopy(_snapshot())
     snapshot["errors"] = ["eve_status"]
 
-    panel = build_panels(snapshot)[2]
+    panel = build_panels(snapshot)[3]
 
     assert panel.embed.color.value == 0xFF1A1A
     assert panel.embed.fields[6].value == "`Unavailable`"
@@ -269,7 +336,7 @@ def test_engine_eta_marks_esi_feed_delayed() -> None:
     snapshot = deepcopy(_snapshot())
     snapshot["eveStatus"]["fetched_at"] = (datetime.now(UTC) - timedelta(minutes=11)).isoformat()
 
-    panel = build_panels(snapshot)[2]
+    panel = build_panels(snapshot)[3]
 
     assert panel.embed.color.value == 0x17C079
     assert panel.embed.fields[8].value == "`Delayed`"
@@ -278,5 +345,5 @@ def test_engine_eta_marks_esi_feed_delayed() -> None:
 def test_build_panels_survives_empty_snapshot() -> None:
     panels = build_panels({})
 
-    assert len(panels) == 3
+    assert len(panels) == 4
     assert all(panel.content_hash for panel in panels)

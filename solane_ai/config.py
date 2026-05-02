@@ -16,6 +16,7 @@ class Settings:
     solane_api_base_url: str
     solane_bot_api_key: str | None
     risk_channel_id: int | None
+    pipes_channel_id: int | None
     corruption_channel_id: int | None
     service_channel_id: int | None
     poll_seconds: int
@@ -29,6 +30,7 @@ class Settings:
             solane_api_base_url=os.getenv("SOLANE_API_BASE_URL", "http://127.0.0.1:8001").rstrip("/"),
             solane_bot_api_key=_optional("SOLANE_BOT_API_KEY"),
             risk_channel_id=_optional_int("DISCORD_RISK_CHANNEL_ID"),
+            pipes_channel_id=_optional_int("DISCORD_PIPES_CHANNEL_ID"),
             corruption_channel_id=_optional_int("DISCORD_CORRUPTION_CHANNEL_ID"),
             service_channel_id=_optional_int("DISCORD_SERVICE_CHANNEL_ID"),
             poll_seconds=max(_optional_int("BOT_POLL_SECONDS") or 300, 60),
@@ -41,6 +43,8 @@ class Settings:
         channels: dict[str, int] = {}
         if self.risk_channel_id:
             channels["risk"] = self.risk_channel_id
+        if self.pipes_channel_id:
+            channels["pipes"] = self.pipes_channel_id
         if self.corruption_channel_id:
             channels["corruption"] = self.corruption_channel_id
         if self.service_channel_id:
