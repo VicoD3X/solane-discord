@@ -8,6 +8,7 @@ import discord
 PANEL_HIGHSEC_CONTROL = 0x79AE6F
 PANEL_POCHVEN_CONTROL = 0xAE2448
 PANEL_LOWSEC_CONTROL = 0xFF653F
+PANEL_NSNPC_CONTROL = 0x8100D1
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
 EMOJI_RED = "\U0001F534"
@@ -26,6 +27,12 @@ LOWSEC_GROUPS = (
     (f"{EMOJI_RED} CRITICAL", "critical", "No Critical Low-Sec system."),
     (f"{EMOJI_ORANGE} FLASHPOINT", "flashpoint", "No Flashpoint Low-Sec system."),
     (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched Low-Sec system."),
+)
+
+NSNPC_GROUPS = (
+    (f"{EMOJI_RED} CRITICAL", "critical", "No Critical NS NPC system."),
+    (f"{EMOJI_ORANGE} FLASHPOINT", "flashpoint", "No Flashpoint NS NPC system."),
+    (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched NS NPC system."),
 )
 
 
@@ -61,6 +68,18 @@ def build_lowsec_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
         feed_key="lowSecControlSystems",
         color=PANEL_LOWSEC_CONTROL,
         groups=LOWSEC_GROUPS,
+        first_column="SYSTEM",
+    )
+
+
+def build_nsnpc_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    return _build_control_embed(
+        snapshot,
+        title="SOLANE RISK / NS NPC CONTROL",
+        description="NS NPC control board from Solane Engine.",
+        feed_key="npcNullSecControlSystems",
+        color=PANEL_NSNPC_CONTROL,
+        groups=NSNPC_GROUPS,
         first_column="SYSTEM",
     )
 
