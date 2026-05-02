@@ -13,7 +13,7 @@ EMOJI_ALERT = "\U0001F6A8"
 EMOJI_TRIANGLE = "\U0001F53B"
 EMOJI_SAFE = "\u2705"
 EMOJI_SOURCE = "\U0001F50E"
-EMOJI_CYCLONE = "\U0001F300"
+EMOJI_DIAMOND = "\U0001F536"
 EMOJI_WORMHOLE = "\U0001F573\ufe0f"
 
 
@@ -51,7 +51,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     embed.add_field(
-        name=f"{EMOJI_CYCLONE} NS NPC CRITICAL",
+        name=f"{EMOJI_DIAMOND} NS NPC CRITICAL",
         value=_critical_lines(
             route_risk.get("npcNullSecCriticalSystems") or [],
             empty="No NPC nullsec system flagged.",

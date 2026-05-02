@@ -179,6 +179,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Niarja" in panels[0].embed.fields[2].value
     assert "PERMA" not in panels[0].embed.fields[2].name
     assert "NS NPC CRITICAL" in panels[0].embed.fields[3].name
+    assert panels[0].embed.fields[3].name.startswith("\U0001F536")
     assert "0-3VW8" in panels[0].embed.fields[3].value
     assert "NS NPC" in panels[0].embed.fields[3].value
     assert "7 kills/h" in panels[0].embed.fields[3].value
