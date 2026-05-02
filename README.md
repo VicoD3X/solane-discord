@@ -6,9 +6,8 @@
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-a855f7)
 
-**SOLANE API** is the Discord intel companion for **Solane Run**. The public
-calculator is closed; the bot is now the main visible product surface and acts
-as a daily EVE hauling intel copilot.
+**SOLANE API** is the Discord intel companion for **Solane Run**. The bot is
+the main visible product surface and acts as a daily EVE risk intel cockpit.
 
 It publishes clean, persistent Discord embeds for route risk, control boards,
 corruption watch and service status.
@@ -68,7 +67,7 @@ This repository is safe to keep public because it does **not** contain:
 - Solane API secrets.
 - Private ESI credentials.
 - Risk formulas.
-- Pricing formulas or legacy calculator logic.
+- Private Solane Engine logic.
 
 All sensitive logic belongs in the private `solane-api` service.
 
@@ -181,7 +180,7 @@ ignored by Git.
 
 ## Suggested GitHub Topics
 
-`eve-online`, `discord-bot`, `discord-py`, `freight`, `logistics`, `route-intel`,
+`eve-online`, `discord-bot`, `discord-py`, `risk-intel`, `route-intel`,
 `python`, `docker`, `solane-run`, `new-eden`
 
 ## Legal
