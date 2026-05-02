@@ -8,7 +8,11 @@ from typing import Any
 import discord
 
 from .panels.engine_eta import build_engine_eta_embed
-from .panels.pipes_control import build_pipes_control_embed, build_pochven_control_embed
+from .panels.pipes_control import (
+    build_lowsec_control_embed,
+    build_pipes_control_embed,
+    build_pochven_control_embed,
+)
 from .panels.solane_risk import build_solane_risk_embed
 
 SOLANE_PURPLE = 0xA855F7
@@ -44,6 +48,7 @@ def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
         PanelMessage("risk", "SOLANE RISK / GLOBAL WATCH", build_solane_risk_embed(snapshot)),
         PanelMessage("pipes", "SOLANE RISK / PIPES CONTROL", build_pipes_control_embed(snapshot)),
         PanelMessage("pochven", "SOLANE RISK / POCHVEN CONTROL", build_pochven_control_embed(snapshot)),
+        PanelMessage("lowsec", "SOLANE RISK / LOW-SEC CONTROL", build_lowsec_control_embed(snapshot)),
         PanelMessage("corruption", "SOLANE RISK / INSURGENCY WATCH", build_corruption_embed(snapshot)),
         PanelMessage("service", "SOLANE ENGINE ETA", build_engine_eta_embed(snapshot)),
     ]

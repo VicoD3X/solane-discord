@@ -18,6 +18,7 @@ class Settings:
     risk_channel_id: int | None
     pipes_channel_id: int | None
     pochven_channel_id: int | None
+    lowsec_channel_id: int | None
     corruption_channel_id: int | None
     service_channel_id: int | None
     poll_seconds: int
@@ -33,6 +34,7 @@ class Settings:
             risk_channel_id=_optional_int("DISCORD_RISK_CHANNEL_ID"),
             pipes_channel_id=_optional_int("DISCORD_PIPES_CHANNEL_ID"),
             pochven_channel_id=_optional_int("DISCORD_POCHVEN_CHANNEL_ID"),
+            lowsec_channel_id=_optional_int("DISCORD_LOWSEC_CHANNEL_ID"),
             corruption_channel_id=_optional_int("DISCORD_CORRUPTION_CHANNEL_ID"),
             service_channel_id=_optional_int("DISCORD_SERVICE_CHANNEL_ID"),
             poll_seconds=max(_optional_int("BOT_POLL_SECONDS") or 300, 60),
@@ -49,6 +51,8 @@ class Settings:
             channels["pipes"] = self.pipes_channel_id
         if self.pochven_channel_id:
             channels["pochven"] = self.pochven_channel_id
+        if self.lowsec_channel_id:
+            channels["lowsec"] = self.lowsec_channel_id
         if self.corruption_channel_id:
             channels["corruption"] = self.corruption_channel_id
         if self.service_channel_id:

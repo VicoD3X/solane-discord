@@ -5,13 +5,29 @@ from typing import Any
 
 import discord
 
-PANEL_PIPES_CONTROL = 0x1A1953
+PANEL_HIGHSEC_CONTROL = 0x79AE6F
+PANEL_POCHVEN_CONTROL = 0xAE2448
+PANEL_LOWSEC_CONTROL = 0xFF653F
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
 EMOJI_RED = "\U0001F534"
+EMOJI_ORANGE = "\U0001F7E0"
 EMOJI_YELLOW = "\U0001F7E1"
 EMOJI_GREEN = "\U0001F7E2"
 EMOJI_SOURCE = "\U0001F50E"
+
+CONTROL_GROUPS = (
+    (f"{EMOJI_RED} CRITICAL", "critical", "No Critical pipe."),
+    (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched pipe."),
+    (f"{EMOJI_GREEN} STABLE", "stable", "No Stable pipe."),
+)
+
+LOWSEC_GROUPS = (
+    (f"{EMOJI_RED} CRITICAL", "critical", "No Critical Low-Sec system."),
+    (f"{EMOJI_ORANGE} FLASHPOINT", "flashpoint", "No Flashpoint Low-Sec system."),
+    (f"{EMOJI_YELLOW} HOT", "hot", "No Hot Low-Sec system."),
+    (f"{EMOJI_GREEN} WATCHED", "watched", "No Watched Low-Sec system."),
+)
 
 
 def build_pipes_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
@@ -20,6 +36,9 @@ def build_pipes_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
         title="SOLANE RISK / PIPES CONTROL",
         description="HighSec pipe control board from Solane Engine.",
         feed_key="pipesControlSystems",
+        color=PANEL_HIGHSEC_CONTROL,
+        groups=CONTROL_GROUPS,
+        first_column="PIPE",
     )
 
 
@@ -29,6 +48,21 @@ def build_pochven_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
         title="SOLANE RISK / POCHVEN CONTROL",
         description="Pochven control board from Solane Engine.",
         feed_key="pochvenControlSystems",
+        color=PANEL_POCHVEN_CONTROL,
+        groups=CONTROL_GROUPS,
+        first_column="PIPE",
+    )
+
+
+def build_lowsec_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    return _build_control_embed(
+        snapshot,
+        title="SOLANE RISK / LOW-SEC CONTROL",
+        description="Low-Sec control board from Solane Engine.",
+        feed_key="lowSecControlSystems",
+        color=PANEL_LOWSEC_CONTROL,
+        groups=LOWSEC_GROUPS,
+        first_column="SYSTEM",
     )
 
 
@@ -38,30 +72,25 @@ def _build_control_embed(
     title: str,
     description: str,
     feed_key: str,
+    color: int,
+    groups: tuple[tuple[str, str, str], ...],
+    first_column: str,
 ) -> discord.Embed:
     pipes = _control_items(snapshot, feed_key)
 
     embed = discord.Embed(
         title=title,
         description=description,
-        color=PANEL_PIPES_CONTROL,
+        color=color,
         timestamp=datetime.now(UTC),
     )
-    embed.add_field(
-        name=f"{EMOJI_RED} CRITICAL",
-        value=_pipe_table(_group(pipes, "critical"), empty="No Critical pipe."),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_YELLOW} WATCHED",
-        value=_pipe_table(_group(pipes, "watched"), empty="No Watched pipe."),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_GREEN} STABLE",
-        value=_pipe_table(_stable_group(pipes), empty="No Stable pipe."),
-        inline=False,
-    )
+    for name, level, empty in groups:
+        grouped = _stable_group(pipes) if level == "stable" else _group(pipes, level)
+        embed.add_field(
+            name=name,
+            value=_pipe_table(grouped, empty=empty, first_column=first_column),
+            inline=False,
+        )
     _append_source_field(embed, snapshot)
     embed.set_footer(text=FOOTER_TEXT)
     return embed
@@ -96,10 +125,10 @@ def _ordered(pipes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     )
 
 
-def _pipe_table(pipes: list[dict[str, Any]], empty: str) -> str:
+def _pipe_table(pipes: list[dict[str, Any]], empty: str, first_column: str) -> str:
     if not pipes:
         return empty
-    lines = [f"{'PIPE':<10} {'STAT':<5} {'KILLS/H':>7}  HOT GATE"]
+    lines = [f"{first_column:<10} {'STAT':<5} {'KILLS/H':>7}  HOT GATE"]
     for pipe in pipes:
         lines.append(
             f"{_clip(str(pipe.get('name') or 'Unknown'), 10):<10} "
@@ -117,6 +146,8 @@ def _level(pipe: dict[str, Any]) -> str:
 def _stat(pipe: dict[str, Any]) -> str:
     return {
         "critical": "CRIT",
+        "flashpoint": "FLASH",
+        "hot": "HOT",
         "watched": "WATCH",
         "safe": "SAFE",
         "unavailable": "UNAV",

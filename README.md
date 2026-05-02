@@ -10,7 +10,7 @@
 calculator is closed; the bot is now the main visible product surface and acts
 as a daily EVE hauling intel copilot.
 
-It publishes clean, persistent Discord embeds for route risk, pipes control,
+It publishes clean, persistent Discord embeds for route risk, control boards,
 corruption watch and service status.
 
 SOLANE API is intentionally a thin public client. The private Solane Engine
@@ -33,7 +33,7 @@ EVE ESI / zKillboard / CCP web
 
 - Persistent Discord panels: post once, then edit.
 - Route risk global watch for HighSec, LowSec, Pochven, NPC nullsec and Thera.
-- Pipes Control boards for selected HighSec pipes, Pochven systems and top gatekill pressure.
+- Control boards for selected HighSec pipes, Pochven systems, active LowSec systems and top gatekill pressure.
 - Insurgency LVL4/LVL5 watch.
 - Service board for Solane Engine and Tranquility status.
 - Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
@@ -55,6 +55,7 @@ must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 | `Solane Risk / Global Watch` | Critical route-risk systems and recently cooled signals. |
 | `Solane Risk / Pipes Control` | Selected HighSec pipes with kills/h and hot gate intel. |
 | `Solane Risk / Pochven Control` | Pochven systems with kills/h and hot gate intel. |
+| `Solane Risk / Low-Sec Control` | Active LowSec systems from watched status upward, with kills/h and hot gate intel. |
 | `Solane Risk / Insurgency Watch` | LVL5 and LVL4 corruption systems from Solane Engine. |
 | `Solane Engine ETA` | Solane Engine state, Tranquility status and ESI feed indicators. |
 
@@ -122,6 +123,7 @@ SOLANE_API_BASE_URL=https://solane-run.app
 DISCORD_RISK_CHANNEL_ID=
 DISCORD_PIPES_CHANNEL_ID=
 DISCORD_POCHVEN_CHANNEL_ID=
+DISCORD_LOWSEC_CHANNEL_ID=
 DISCORD_CORRUPTION_CHANNEL_ID=
 DISCORD_SERVICE_CHANNEL_ID=
 ```
