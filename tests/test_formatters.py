@@ -124,6 +124,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert panels[2].embed.color.value == 0x17C079
     assert panels[2].title == "SOLANE ENGINE ETA"
     assert "SOLANE ENGINE ETA" in panels[2].embed.title
+    assert panels[2].embed.fields[1].name.startswith("\U0001F310")
     assert "18,000 pilots" in panels[2].embed.fields[1].value
     assert "ESI SYNC" in panels[2].embed.fields[2].name
     assert "CLUSTER MODE" in panels[2].embed.fields[6].name

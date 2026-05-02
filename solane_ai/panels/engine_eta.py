@@ -12,8 +12,8 @@ FOOTER_TEXT = "Data from Solane Engine - status.eveonline.com"
 EMOJI_ANTENNA = "\U0001F4E1"
 EMOJI_BRAIN = "\U0001F9E0"
 EMOJI_CYCLONE = "\U0001F300"
+EMOJI_GLOBE = "\U0001F310"
 EMOJI_RECEIPT = "\U0001F9FE"
-EMOJI_SATELLITE_DISH = "\U0001F4E1"
 EMOJI_SOURCE = "\U0001F50E"
 EMOJI_TIMER = "\u23F1\ufe0f"
 EMOJI_TRUCK = "\U0001F69A"
@@ -51,7 +51,7 @@ def build_engine_eta_embed(snapshot: dict[str, Any]) -> discord.Embed:
     )
     embed.add_field(name=f"{EMOJI_BRAIN} API LINK", value=_service_value(api_state), inline=True)
     embed.add_field(
-        name=f"{EMOJI_SATELLITE_DISH} EVE CLUSTER",
+        name=f"{EMOJI_GLOBE} EVE CLUSTER",
         value=_service_value(tranquility),
         inline=True,
     )
