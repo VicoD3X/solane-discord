@@ -8,6 +8,7 @@ from typing import Any
 import discord
 
 from .panels.engine_eta import build_engine_eta_embed
+from .panels.solane_risk import build_solane_risk_embed
 
 SOLANE_PURPLE = 0xA855F7
 SOLANE_BLUE = 0x19A8FF
@@ -15,16 +16,10 @@ SOLANE_GOLD = 0xFFD66A
 SOLANE_RED = 0xDB1A1A
 SOLANE_ORANGE = 0xFFC81E
 SOLANE_GREEN = 0x67C090
-PANEL_ROUTE_RISK = 0x7AAACE
 PANEL_CORRUPTION = 0x1A2CA3
 SOURCE_URL = "https://solane-run.app/route-intel"
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
-EMOJI_SATELLITE = "\U0001F6F0\ufe0f"
-EMOJI_RED = "\U0001F534"
-EMOJI_HOURGLASS = "\u23F3"
-EMOJI_BRICKS = "\U0001F9F1"
-EMOJI_GREEN = "\U0001F7E2"
 EMOJI_SOURCE = "\U0001F50E"
 EMOJI_CYCLONE = "\U0001F300"
 EMOJI_BLUE = "\U0001F535"
@@ -45,64 +40,10 @@ class PanelMessage:
 
 def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
     return [
-        PanelMessage("risk", "SOLANE API - Route Risk", build_route_risk_embed(snapshot)),
+        PanelMessage("risk", "SOLANE RISK / GLOBAL WATCH", build_solane_risk_embed(snapshot)),
         PanelMessage("corruption", "SOLANE API - Corruption Watch", build_corruption_embed(snapshot)),
         PanelMessage("service", "SOLANE ENGINE ETA", build_engine_eta_embed(snapshot)),
     ]
-
-
-def build_route_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
-    overview = _overview(snapshot)
-    bot_summary = _bot_summary(snapshot)
-    route_risk = bot_summary.get("routeRisk") if isinstance(bot_summary.get("routeRisk"), dict) else {}
-    crossroads = ((overview.get("crossroads") or {}).get("items") or []) if overview else []
-    danger = [item for item in crossroads if _lower(item.get("label")) == "danger"]
-    restricted = route_risk.get("restrictedSystems") or []
-    static_restricted = route_risk.get("staticRestrictedSystems")
-    if not static_restricted:
-        static_restricted = [
-            item for item in restricted if item.get("source") == "static"
-        ]
-    dynamic_restricted = route_risk.get("dynamicRestrictedSystems") or []
-    recently_open = route_risk.get("recentlyOpenSystems") or []
-    corruption_items = ((overview.get("corruption") or {}).get("items") or []) if overview else []
-    corruption_restricted = [
-        item for item in corruption_items if int(item.get("corruptionState") or 0) >= 4
-    ]
-
-    embed = _base_embed(
-        title=f"{EMOJI_SATELLITE} SOLANE API / ROUTE RISK",
-        description="Operational route watch for active pipe danger and Solane restrictions.",
-        color=PANEL_ROUTE_RISK,
-    )
-    embed.add_field(
-        name=f"{EMOJI_RED} HIGHSEC DANGER",
-        value=_system_lines(danger, empty="No HighSec pipe in Danger."),
-        inline=True,
-    )
-    embed.add_field(
-        name=f"{EMOJI_HOURGLASS} TEMP RESTRICTED",
-        value=_dynamic_restricted_lines(dynamic_restricted, empty="No temporary closure."),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_BRICKS} PERMA RESTRICTED",
-        value=_static_watchlist_lines(static_restricted),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_CYCLONE} CORRUPTION RESTRICTED",
-        value=_corruption_restricted_lines(corruption_restricted),
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{EMOJI_GREEN} RECENTLY OPEN",
-        value=_recently_open_lines(recently_open, empty="No recent reopening feed yet."),
-        inline=False,
-    )
-    _append_source_field(embed, snapshot)
-    embed.set_footer(text=FOOTER_TEXT)
-    return embed
 
 
 def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
@@ -165,76 +106,6 @@ def _bot_summary(snapshot: dict[str, Any]) -> dict[str, Any]:
     return summary if isinstance(summary, dict) else {}
 
 
-def _system_lines(items: list[dict[str, Any]], empty: str) -> str:
-    if not items:
-        return empty
-    lines = []
-    for item in items[:6]:
-        system = item.get("system") or {}
-        name = system.get("name", "Unknown")
-        kills = item.get("shipKillsLastHour")
-        kills_text = kills if kills is not None else "?"
-        lines.append(f"**{name}** `{kills_text}/h`")
-    return "\n".join(lines)
-
-
-def _dynamic_restricted_lines(items: list[dict[str, Any]], empty: str) -> str:
-    if not items:
-        return empty
-    latest_possible = datetime.max.replace(tzinfo=UTC)
-    ordered = sorted(
-        items,
-        key=lambda item: _parse_time(item.get("closedAt")) or latest_possible,
-    )
-    return "\n".join(_dynamic_restricted_item_label(item) for item in ordered[:12])
-
-
-def _dynamic_restricted_item_label(item: dict[str, Any]) -> str:
-    service = _short_service(item.get("serviceType")) or "Unknown"
-    duration = _closed_duration_label(item.get("closedAt"))
-    return f"**{item.get('name', 'Unknown')}** {service} `{duration}`"
-
-
-def _static_watchlist_lines(items: list[dict[str, Any]]) -> str:
-    if not items:
-        return "No permanent restriction."
-
-    names = sorted(str(item.get("name", "Unknown")) for item in items)
-    return " • ".join(f"**{name}**" for name in names)
-
-
-def _corruption_restricted_lines(items: list[dict[str, Any]]) -> str:
-    if not items:
-        return "No corruption restriction."
-
-    ordered = sorted(
-        items,
-        key=lambda item: (
-            -int(item.get("corruptionState") or 0),
-            -float(item.get("corruptionPercentage") or 0),
-            str((item.get("system") or {}).get("name") or "Unknown"),
-        ),
-    )
-    labels = []
-    for item in ordered:
-        system = item.get("system") or {}
-        name = system.get("name", "Unknown")
-        corruption = round(float(item.get("corruptionPercentage") or 0))
-        labels.append(f"**{name}** `{corruption}%`")
-    return " • ".join(labels)
-
-
-def _recently_open_lines(items: list[dict[str, Any]], empty: str) -> str:
-    if not items:
-        return empty
-    lines = []
-    for item in items[:4]:
-        service = _short_service(item.get("serviceType"))
-        service_suffix = f" {service}" if service else ""
-        lines.append(f"**{item.get('name', 'Unknown')}**{service_suffix} `Open`")
-    return "\n".join(lines)
-
-
 def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
     if not items:
         return empty
@@ -285,21 +156,6 @@ def _format_utc_time(value: Any) -> str:
         return parsed.astimezone(UTC).strftime("%H:%M EVE")
     except ValueError:
         return str(value)
-
-
-def _closed_duration_label(value: Any) -> str:
-    parsed = _parse_time(value)
-    if parsed is None:
-        return "closed"
-
-    minutes = max(int((datetime.now(UTC) - parsed).total_seconds() // 60), 0)
-    if minutes < 60:
-        return f"closed {minutes} min"
-
-    hours, remainder = divmod(minutes, 60)
-    if remainder == 0:
-        return f"closed {hours}h"
-    return f"closed {hours}h {remainder}m"
 
 
 def _parse_time(value: Any) -> datetime | None:

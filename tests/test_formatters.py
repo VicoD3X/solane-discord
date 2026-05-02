@@ -17,42 +17,76 @@ def _snapshot() -> dict:
         "botSummary": {
             "generatedAt": "2026-04-29T08:00:00+00:00",
             "routeRisk": {
-                "restrictedSystems": [
+                "highSecCriticalSystems": [
                     {
-                        "id": 30005196,
-                        "name": "Ahbazon",
-                        "serviceType": "LowSec",
-                        "source": "static",
-                        "reason": "Static Solane restricted system.",
+                        "id": 30002768,
+                        "name": "Uedama",
+                        "serviceType": "HighSec",
+                        "reason": "Severe HighSec ship loss activity detected.",
+                        "level": "critical",
+                        "label": "Critical",
+                        "shipKillsLastHour": 19,
+                        "criticalAt": "2026-04-29T07:10:00+00:00",
                     },
+                ],
+                "lowSecCriticalSystems": [
                     {
-                        "id": 30002797,
+                        "id": 30002813,
+                        "name": "Tama",
+                        "serviceType": "LowSec",
+                        "reason": "Severe LowSec PVP activity detected.",
+                        "level": "critical",
+                        "label": "Critical",
+                        "shipKillsLastHour": 20,
+                        "criticalAt": "2026-04-29T07:30:00+00:00",
+                    },
+                ],
+                "pochvenCriticalSystems": [
+                    {
+                        "id": 30003504,
                         "name": "Niarja",
                         "serviceType": "Pochven",
-                        "source": "static",
-                        "reason": "Static Solane restricted system.",
-                    },
-                    {
-                        "id": 30002813,
-                        "name": "Tama",
-                        "serviceType": "LowSec",
-                        "source": "pvp",
-                        "reason": "Severe LowSec PVP activity detected.",
-                        "shipKillsLastHour": 20,
+                        "reason": "Severe Pochven PVP activity detected.",
+                        "level": "critical",
+                        "label": "Critical",
+                        "shipKillsLastHour": 9,
+                        "criticalAt": "2026-04-29T07:00:00+00:00",
                     },
                 ],
-                "staticRestrictedSystems": [],
-                "dynamicRestrictedSystems": [
+                "theraStatus": {
+                    "id": 31000005,
+                    "name": "Thera",
+                    "serviceType": "Thera",
+                    "status": "Watched",
+                    "level": "watched",
+                    "label": "Watched",
+                    "shipKillsLastHour": 4,
+                    "lastSyncedAt": "2026-04-29T08:00:00+00:00",
+                },
+                "corruptionCriticalSystems": [
                     {
-                        "id": 30002813,
-                        "name": "Tama",
+                        "id": 30045343,
+                        "name": "Siseide",
+                        "serviceType": "HighSec",
+                        "corruptionState": 5,
+                        "corruptionPercentage": 88.4,
+                    },
+                    {
+                        "id": 30002086,
+                        "name": "Turnur",
                         "serviceType": "LowSec",
-                        "shipKillsLastHour": 20,
-                        "closedAt": "2026-04-29T07:30:00+00:00",
+                        "corruptionState": 4,
+                        "corruptionPercentage": 55.5,
                     },
                 ],
-                "recentlyOpenSystems": [
-                    {"id": 30002510, "name": "Old Man Star", "serviceType": "LowSec"},
+                "recentlySaferSystems": [
+                    {
+                        "id": 30002510,
+                        "name": "Old Man Star",
+                        "serviceType": "LowSec",
+                        "shipKillsLastHour": 3,
+                        "saferAt": "2026-04-29T07:55:00+00:00",
+                    },
                 ],
             },
             "service": {"status": "open", "label": "Open"},
@@ -100,24 +134,35 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     panels = build_panels(_snapshot())
 
     assert [panel.key for panel in panels] == ["risk", "corruption", "service"]
-    assert "Uedama" in panels[0].embed.fields[0].value
+    assert panels[0].title == "SOLANE RISK / GLOBAL WATCH"
+    assert panels[0].embed.title == "SOLANE RISK / GLOBAL WATCH"
     assert panels[0].embed.color.value == 0x7AAACE
-    assert "TEMP RESTRICTED" in panels[0].embed.fields[1].name
+    assert "HIGHSEC DANGER" in panels[0].embed.fields[0].name
+    assert "Uedama" in panels[0].embed.fields[0].value
+    assert "19 kills/h" in panels[0].embed.fields[0].value
+    assert "critical" in panels[0].embed.fields[0].value
+    assert "LOW-SEC CRITICAL" in panels[0].embed.fields[1].name
     assert "Tama" in panels[0].embed.fields[1].value
-    assert "closed" in panels[0].embed.fields[1].value
-    assert panels[0].embed.fields[2].name.endswith("PERMA RESTRICTED")
-    assert "Ahbazon" in panels[0].embed.fields[2].value
+    assert "20 kills/h" in panels[0].embed.fields[1].value
+    assert "closed" not in panels[0].embed.fields[1].value
+    assert "POCHVEN CRITICAL" in panels[0].embed.fields[2].name
     assert "Niarja" in panels[0].embed.fields[2].value
-    assert "PERMA RESTRICTED Pochven" not in panels[0].embed.fields[2].name
-    assert "CORRUPTION RESTRICTED" in panels[0].embed.fields[3].name
+    assert "PERMA" not in panels[0].embed.fields[2].name
+    assert "CORRUPTION CRITICAL" in panels[0].embed.fields[3].name
     assert "Siseide" in panels[0].embed.fields[3].value
-    assert "`88%`" in panels[0].embed.fields[3].value
+    assert "lvl 5 - 88%" in panels[0].embed.fields[3].value
     assert "Turnur" in panels[0].embed.fields[3].value
-    assert "`56%`" in panels[0].embed.fields[3].value
-    assert "RECENTLY OPEN" in panels[0].embed.fields[4].name
-    assert "SOURCE" in panels[0].embed.fields[5].name
-    assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[5].value
-    assert "https://solane-run.app/route-intel" in panels[0].embed.fields[5].value
+    assert "lvl 4 - 56%" in panels[0].embed.fields[3].value
+    assert "THERA STATUS" in panels[0].embed.fields[4].name
+    assert "Thera" in panels[0].embed.fields[4].value
+    assert "4 kills/h" in panels[0].embed.fields[4].value
+    assert "RECENTLY SAFER" in panels[0].embed.fields[5].name
+    assert "Old Man Star" in panels[0].embed.fields[5].value
+    assert "SOURCE" in panels[0].embed.fields[6].name
+    assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[6].value
+    assert "Check our source" not in panels[0].embed.fields[6].value
+    assert "https://solane-run.app/route-intel" not in panels[0].embed.fields[6].value
+    assert "RESTRICTED" not in " ".join(field.name for field in panels[0].embed.fields)
     assert panels[1].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[1].embed.fields[0].value
     assert "HS" in panels[1].embed.fields[0].value
