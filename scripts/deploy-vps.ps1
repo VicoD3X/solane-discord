@@ -176,9 +176,53 @@ fi
 
 cd "$BASE/repo/bot"
 docker compose -p solane-bot --env-file "$BOT_ENV" build
+
+for attempt in $(seq 1 20); do
+  if docker compose -p solane-bot --env-file "$BOT_ENV" run --rm --no-deps bot python - <<'PY'
+import json
+import urllib.request
+
+with urllib.request.urlopen("http://solane-api:8000/health", timeout=5) as response:
+    payload = json.load(response)
+
+raise SystemExit(0 if payload.get("service") == "solane-engine" else 1)
+PY
+  then
+    break
+  fi
+  if [ "$attempt" -eq 20 ]; then
+    echo "Solane Engine is not reachable from Docker network." >&2
+    exit 1
+  fi
+  sleep 2
+done
+
 docker compose -p solane-bot --env-file "$BOT_ENV" up -d
 
-sleep 8
+for attempt in $(seq 1 20); do
+  if docker compose -p solane-bot --env-file "$BOT_ENV" ps --status running --services | grep -qx bot; then
+    break
+  fi
+  if [ "$attempt" -eq 20 ]; then
+    echo "Bot container did not stay running." >&2
+    docker compose -p solane-bot --env-file "$BOT_ENV" logs --tail=120 bot >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+for attempt in $(seq 1 20); do
+  if docker compose -p solane-bot --env-file "$BOT_ENV" logs --since 2m bot | grep -q 'GET http://solane-api:8000/api/eve/status "HTTP/1.1 200 OK"'; then
+    break
+  fi
+  if [ "$attempt" -eq 20 ]; then
+    echo "Bot did not confirm a fresh Solane Engine status fetch." >&2
+    docker compose -p solane-bot --env-file "$BOT_ENV" logs --tail=120 bot >&2
+    exit 1
+  fi
+  sleep 2
+done
+
 docker compose -p solane-bot --env-file "$BOT_ENV" ps
 docker compose -p solane-bot --env-file "$BOT_ENV" logs --tail=80 bot
 

@@ -53,7 +53,7 @@ must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 | --- | --- |
 | `Route Risk` | HighSec danger, restricted systems and recently reopened systems. |
 | `Corruption Watch` | LVL5 and LVL4 corruption systems from Solane API. |
-| `Service Intel` | Solane API state, Tranquility status and public service indicators. |
+| `Solane Engine ETA` | Solane Engine state, Tranquility status and ESI feed indicators. |
 
 ## Repository Boundary
 
