@@ -27,7 +27,7 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         timestamp=datetime.now(UTC),
     )
     embed.add_field(
-        name=f"{EMOJI_WARNING} HIGHSEC DANGER",
+        name=f"{EMOJI_WARNING} HIGHSEC CRITICAL",
         value=_critical_lines(
             route_risk.get("highSecCriticalSystems") or [],
             empty="No HighSec pipe flagged.",
@@ -51,8 +51,11 @@ def build_solane_risk_embed(snapshot: dict[str, Any]) -> discord.Embed:
         inline=False,
     )
     embed.add_field(
-        name=f"{EMOJI_CYCLONE} CORRUPTION CRITICAL",
-        value=_corruption_lines(route_risk.get("corruptionCriticalSystems") or []),
+        name=f"{EMOJI_CYCLONE} NS NPC CRITICAL",
+        value=_critical_lines(
+            route_risk.get("npcNullSecCriticalSystems") or [],
+            empty="No NPC nullsec system flagged.",
+        ),
         inline=False,
     )
     embed.add_field(
@@ -119,25 +122,6 @@ def _critical_item_line(item: dict[str, Any]) -> str:
     return f"**{item.get('name', 'Unknown')}**{service_suffix} `{kills}` | `{duration}`"
 
 
-def _corruption_lines(items: list[dict[str, Any]]) -> str:
-    if not items:
-        return "No corruption Critical system."
-    ordered = sorted(
-        items,
-        key=lambda item: (
-            -int(item.get("corruptionState") or 0),
-            -float(item.get("corruptionPercentage") or 0),
-            str(item.get("name") or "Unknown"),
-        ),
-    )
-    labels = []
-    for item in ordered[:10]:
-        level = int(item.get("corruptionState") or 0)
-        corruption = round(float(item.get("corruptionPercentage") or 0))
-        labels.append(f"**{item.get('name', 'Unknown')}** `lvl {level} - {corruption}%`")
-    return "\n".join(labels)
-
-
 def _thera_status_line(item: Any) -> str:
     if not isinstance(item, dict):
         return "**Thera** `Unavailable` `? kills/h`"
@@ -186,16 +170,16 @@ def _critical_duration_label(value: Any) -> str:
 def _safer_duration_label(value: Any) -> str:
     parsed = _parse_time(value)
     if parsed is None:
-        return "Safer"
+        return "cooled"
 
     minutes = max(int((datetime.now(UTC) - parsed).total_seconds() // 60), 0)
     if minutes < 60:
-        return f"safer {minutes} min"
+        return f"cooled {minutes} min"
 
     hours, remainder = divmod(minutes, 60)
     if remainder == 0:
-        return f"safer {hours}h"
-    return f"safer {hours}h {remainder}m"
+        return f"cooled {hours}h"
+    return f"cooled {hours}h {remainder}m"
 
 
 def _short_service(value: Any) -> str:
@@ -203,6 +187,8 @@ def _short_service(value: Any) -> str:
         return "HS"
     if value == "LowSec":
         return "LS"
+    if value == "NpcNullSec":
+        return "NS NPC"
     return str(value or "")
 
 

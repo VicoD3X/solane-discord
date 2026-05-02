@@ -53,6 +53,18 @@ def _snapshot() -> dict:
                         "criticalAt": "2026-04-29T07:00:00+00:00",
                     },
                 ],
+                "npcNullSecCriticalSystems": [
+                    {
+                        "id": 30000995,
+                        "name": "0-3VW8",
+                        "serviceType": "NpcNullSec",
+                        "reason": "Severe NPC nullsec PVP activity detected.",
+                        "level": "critical",
+                        "label": "Critical",
+                        "shipKillsLastHour": 7,
+                        "criticalAt": "2026-04-29T07:20:00+00:00",
+                    },
+                ],
                 "theraStatus": {
                     "id": 31000005,
                     "name": "Thera",
@@ -63,22 +75,6 @@ def _snapshot() -> dict:
                     "shipKillsLastHour": 4,
                     "lastSyncedAt": "2026-04-29T08:00:00+00:00",
                 },
-                "corruptionCriticalSystems": [
-                    {
-                        "id": 30045343,
-                        "name": "Siseide",
-                        "serviceType": "HighSec",
-                        "corruptionState": 5,
-                        "corruptionPercentage": 88.4,
-                    },
-                    {
-                        "id": 30002086,
-                        "name": "Turnur",
-                        "serviceType": "LowSec",
-                        "corruptionState": 4,
-                        "corruptionPercentage": 55.5,
-                    },
-                ],
                 "recentlySaferSystems": [
                     {
                         "id": 30002510,
@@ -167,7 +163,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert panels[0].title == "SOLANE RISK / GLOBAL WATCH"
     assert panels[0].embed.title == "SOLANE RISK / GLOBAL WATCH"
     assert panels[0].embed.color.value == 0x7AAACE
-    assert "HIGHSEC DANGER" in panels[0].embed.fields[0].name
+    assert "HIGHSEC CRITICAL" in panels[0].embed.fields[0].name
     assert "Uedama" in panels[0].embed.fields[0].value
     assert "19 kills/h" in panels[0].embed.fields[0].value
     assert " | " in panels[0].embed.fields[0].value
@@ -182,16 +178,18 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "POCHVEN CRITICAL" in panels[0].embed.fields[2].name
     assert "Niarja" in panels[0].embed.fields[2].value
     assert "PERMA" not in panels[0].embed.fields[2].name
-    assert "CORRUPTION CRITICAL" in panels[0].embed.fields[3].name
-    assert "Siseide" in panels[0].embed.fields[3].value
-    assert "lvl 5 - 88%" in panels[0].embed.fields[3].value
-    assert "Turnur" in panels[0].embed.fields[3].value
-    assert "lvl 4 - 56%" in panels[0].embed.fields[3].value
+    assert "NS NPC CRITICAL" in panels[0].embed.fields[3].name
+    assert "0-3VW8" in panels[0].embed.fields[3].value
+    assert "NS NPC" in panels[0].embed.fields[3].value
+    assert "7 kills/h" in panels[0].embed.fields[3].value
+    assert "CORRUPTION CRITICAL" not in panels[0].embed.fields[3].name
     assert "THERA STATUS" in panels[0].embed.fields[4].name
     assert "Thera" in panels[0].embed.fields[4].value
     assert "4 kills/h" in panels[0].embed.fields[4].value
     assert "RECENTLY SAFER" in panels[0].embed.fields[5].name
     assert "Old Man Star" in panels[0].embed.fields[5].value
+    assert "cooled" in panels[0].embed.fields[5].value
+    assert "safer" not in panels[0].embed.fields[5].value
     assert "SOURCE" in panels[0].embed.fields[6].name
     assert "Last API update: `08:00 EVE`" in panels[0].embed.fields[6].value
     assert "Check our source" not in panels[0].embed.fields[6].value
