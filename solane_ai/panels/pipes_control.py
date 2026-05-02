@@ -15,11 +15,35 @@ EMOJI_SOURCE = "\U0001F50E"
 
 
 def build_pipes_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
-    pipes = _pipes(snapshot)
-
-    embed = discord.Embed(
+    return _build_control_embed(
+        snapshot,
         title="SOLANE RISK / PIPES CONTROL",
         description="HighSec pipe control board from Solane Engine.",
+        feed_key="pipesControlSystems",
+    )
+
+
+def build_pochven_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    return _build_control_embed(
+        snapshot,
+        title="SOLANE RISK / POCHVEN CONTROL",
+        description="Pochven control board from Solane Engine.",
+        feed_key="pochvenControlSystems",
+    )
+
+
+def _build_control_embed(
+    snapshot: dict[str, Any],
+    *,
+    title: str,
+    description: str,
+    feed_key: str,
+) -> discord.Embed:
+    pipes = _control_items(snapshot, feed_key)
+
+    embed = discord.Embed(
+        title=title,
+        description=description,
         color=PANEL_PIPES_CONTROL,
         timestamp=datetime.now(UTC),
     )
@@ -43,14 +67,14 @@ def build_pipes_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
     return embed
 
 
-def _pipes(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+def _control_items(snapshot: dict[str, Any], feed_key: str) -> list[dict[str, Any]]:
     summary = snapshot.get("botSummary")
     if not isinstance(summary, dict):
         return []
     route_risk = summary.get("routeRisk")
     if not isinstance(route_risk, dict):
         return []
-    pipes = route_risk.get("pipesControlSystems")
+    pipes = route_risk.get(feed_key)
     return [item for item in pipes if isinstance(item, dict)] if isinstance(pipes, list) else []
 
 

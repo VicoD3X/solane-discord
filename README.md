@@ -33,7 +33,7 @@ EVE ESI / zKillboard / CCP web
 
 - Persistent Discord panels: post once, then edit.
 - Route risk global watch for HighSec, LowSec, Pochven, NPC nullsec and Thera.
-- Pipes Control board for selected HighSec pipes and top gatekill pressure.
+- Pipes Control boards for selected HighSec pipes, Pochven systems and top gatekill pressure.
 - Insurgency LVL4/LVL5 watch.
 - Service board for Solane Engine and Tranquility status.
 - Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
@@ -54,6 +54,7 @@ must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 | --- | --- |
 | `Solane Risk / Global Watch` | Critical route-risk systems and recently cooled signals. |
 | `Solane Risk / Pipes Control` | Selected HighSec pipes with kills/h and hot gate intel. |
+| `Solane Risk / Pochven Control` | Pochven systems with kills/h and hot gate intel. |
 | `Solane Risk / Insurgency Watch` | LVL5 and LVL4 corruption systems from Solane Engine. |
 | `Solane Engine ETA` | Solane Engine state, Tranquility status and ESI feed indicators. |
 
@@ -120,6 +121,7 @@ DISCORD_TOKEN=
 SOLANE_API_BASE_URL=https://solane-run.app
 DISCORD_RISK_CHANNEL_ID=
 DISCORD_PIPES_CHANNEL_ID=
+DISCORD_POCHVEN_CHANNEL_ID=
 DISCORD_CORRUPTION_CHANNEL_ID=
 DISCORD_SERVICE_CHANNEL_ID=
 ```
