@@ -13,14 +13,16 @@ as a daily EVE hauling intel copilot.
 It publishes clean, persistent Discord embeds for route risk, HighSec danger,
 corruption watch and service status.
 
-SOLANE API is intentionally a thin public client. The private Solane API remains
-the source of truth for ESI, zKillboard, route risk, corruption intel and all
-operational rules.
+SOLANE API is intentionally a thin public client. The private Solane Engine
+service remains the source of truth for ESI, zKillboard, route risk, corruption
+intel and all operational rules. Its technical service/repository name remains
+`solane-api` for deployment compatibility.
 
 ```text
 EVE ESI / zKillboard / CCP web
               |
-          solane-api
+       Solane Engine
+        (solane-api)
               |
           SOLANE API
               |
@@ -35,6 +37,15 @@ EVE ESI / zKillboard / CCP web
 - Service board for Solane API and Tranquility status.
 - Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
 - Docker-ready deployment for the Solane Run VPS network.
+
+## Source of Truth
+
+The Discord bot is the only active public publishing surface, but it is not the
+data engine. It must only consume Solane Engine HTTP payloads, format Discord
+embeds, and edit persistent Discord messages.
+
+The bot must not call ESI, CCP web, zKillboard or private ESI directly, and it
+must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 
 ## Beta Panels
 

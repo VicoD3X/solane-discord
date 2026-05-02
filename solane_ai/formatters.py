@@ -7,6 +7,8 @@ from typing import Any
 
 import discord
 
+from .panels.engine_eta import build_engine_eta_embed
+
 SOLANE_PURPLE = 0xA855F7
 SOLANE_BLUE = 0x19A8FF
 SOLANE_GOLD = 0xFFD66A
@@ -15,7 +17,6 @@ SOLANE_ORANGE = 0xFFC81E
 SOLANE_GREEN = 0x67C090
 PANEL_ROUTE_RISK = 0x7AAACE
 PANEL_CORRUPTION = 0x1A2CA3
-PANEL_SERVICE = 0x17C079
 SOURCE_URL = "https://solane-run.app/route-intel"
 FOOTER_TEXT = "Data from Solane API - Proprietary license"
 
@@ -28,11 +29,6 @@ EMOJI_SOURCE = "\U0001F50E"
 EMOJI_CYCLONE = "\U0001F300"
 EMOJI_BLUE = "\U0001F535"
 EMOJI_PURPLE = "\U0001F7E3"
-EMOJI_BRAIN = "\U0001F9E0"
-EMOJI_SATELLITE_DISH = "\U0001F4E1"
-EMOJI_TIMER = "\u23F1\ufe0f"
-EMOJI_TRUCK = "\U0001F69A"
-EMOJI_RECEIPT = "\U0001F9FE"
 
 
 @dataclass(frozen=True)
@@ -51,7 +47,7 @@ def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
     return [
         PanelMessage("risk", "SOLANE API - Route Risk", build_route_risk_embed(snapshot)),
         PanelMessage("corruption", "SOLANE API - Corruption Watch", build_corruption_embed(snapshot)),
-        PanelMessage("service", "SOLANE API - Service Intel", build_service_embed(snapshot)),
+        PanelMessage("service", "SOLANE ENGINE ETA", build_engine_eta_embed(snapshot)),
     ]
 
 
@@ -128,46 +124,6 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     embed.add_field(
         name=f"{EMOJI_PURPLE} LVL4 WATCH",
         value=_corruption_lines(lvl4, empty="No LVL4 corruption detected."),
-        inline=True,
-    )
-    _append_source_field(embed, snapshot)
-    embed.set_footer(text=FOOTER_TEXT)
-    return embed
-
-
-def build_service_embed(snapshot: dict[str, Any]) -> discord.Embed:
-    health = snapshot.get("health") or {}
-    eve = snapshot.get("eveStatus") or {}
-    overview = _overview(snapshot)
-    bot_summary = _bot_summary(snapshot)
-    service = bot_summary.get("service") if isinstance(bot_summary.get("service"), dict) else {}
-    errors = snapshot.get("errors") or []
-
-    api_state = "Operational" if health and not errors else "Partial" if health else "Unavailable"
-    players = eve.get("players")
-    vip = eve.get("vip")
-    tranquility = "VIP mode" if vip else f"{players:,} pilots" if isinstance(players, int) else "Syncing"
-    server_version = str(eve.get("server_version") or "Unavailable")
-    esi_sync = _format_utc_time(eve.get("fetched_at"))
-    solane_status = str(service.get("label") or "Open")
-
-    embed = _base_embed(
-        title=f"{EMOJI_GREEN} SOLANE API / SERVICE INTEL",
-        description="Public service status for Solane Run operations.",
-        color=PANEL_SERVICE,
-    )
-    embed.add_field(name=f"{EMOJI_BRAIN} API LINK", value=_service_value(api_state), inline=True)
-    embed.add_field(
-        name=f"{EMOJI_SATELLITE_DISH} EVE CLUSTER",
-        value=_service_value(tranquility),
-        inline=True,
-    )
-    embed.add_field(name=f"{EMOJI_TIMER} ESI SYNC", value=_service_value(esi_sync), inline=True)
-    embed.add_field(name=f"{EMOJI_TRUCK} SERVICE", value=_service_value(solane_status), inline=True)
-    embed.add_field(name=f"{EMOJI_RECEIPT} BUILD", value=_service_value(server_version), inline=True)
-    embed.add_field(
-        name=f"{EMOJI_CYCLONE} CORRUPTION",
-        value=_service_value(_count_label(overview, "corruption")),
         inline=True,
     )
     _append_source_field(embed, snapshot)
@@ -293,10 +249,6 @@ def _corruption_lines(items: list[dict[str, Any]], empty: str) -> str:
         suppression = round(float(item.get("suppressionPercentage") or 0))
         lines.append(f"**{name}**\n`{service_prefix}LVL{level}` - `{corruption}% / {suppression}%`")
     return "\n".join(lines)
-
-
-def _service_value(value: str) -> str:
-    return f"`{value}`"
 
 
 def _count_label(overview: dict[str, Any], key: str) -> str:
