@@ -330,7 +330,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
         + [field.value for field in panels[2].embed.fields]
     ).lower()
     assert panels[3].title == "SOLANE RISK / INSURGENCY WATCH"
-    assert "SOLANE RISK / INSURGENCY WATCH" in panels[3].embed.title
+    assert panels[3].embed.title == "SOLANE RISK / INSURGENCY WATCH"
     assert panels[3].embed.color.value == 0x1A2CA3
     assert "Siseide" in panels[3].embed.fields[0].value
     assert "HS" in panels[3].embed.fields[0].value
@@ -349,7 +349,7 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "https://solane-run.app/route-intel" not in panels[3].embed.fields[3].value
     assert panels[4].embed.color.value == 0x17C079
     assert panels[4].title == "SOLANE ENGINE ETA"
-    assert "SOLANE ENGINE ETA" in panels[4].embed.title
+    assert panels[4].embed.title == "SOLANE ENGINE ETA"
     assert panels[4].embed.fields[1].name.startswith("\U0001F310")
     assert "18,000 pilots" in panels[4].embed.fields[1].value
     assert "ESI SYNC" in panels[4].embed.fields[2].name

@@ -44,7 +44,7 @@ def build_engine_eta_embed(snapshot: dict[str, Any]) -> discord.Embed:
     solane_status = str(service.get("label") or "Open")
 
     embed = discord.Embed(
-        title=f"{EMOJI_ANTENNA} SOLANE ENGINE ETA",
+        title="SOLANE ENGINE ETA",
         description="Public service status for Solane Engine and EVE Online telemetry.",
         color=_eta_color(snapshot),
         timestamp=datetime.now(UTC),

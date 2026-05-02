@@ -57,7 +57,7 @@ def build_corruption_embed(snapshot: dict[str, Any]) -> discord.Embed:
     lvl4 = [item for item in items if int(item.get("corruptionState") or 0) == 4]
 
     embed = _base_embed(
-        title=f"{EMOJI_CYCLONE} SOLANE RISK / INSURGENCY WATCH",
+        title="SOLANE RISK / INSURGENCY WATCH",
         description="Insurgency corruption level 4 and 5 systems.",
         color=PANEL_CORRUPTION,
     )
