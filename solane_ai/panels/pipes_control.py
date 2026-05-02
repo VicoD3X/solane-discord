@@ -25,8 +25,7 @@ CONTROL_GROUPS = (
 LOWSEC_GROUPS = (
     (f"{EMOJI_RED} CRITICAL", "critical", "No Critical Low-Sec system."),
     (f"{EMOJI_ORANGE} FLASHPOINT", "flashpoint", "No Flashpoint Low-Sec system."),
-    (f"{EMOJI_YELLOW} HOT", "hot", "No Hot Low-Sec system."),
-    (f"{EMOJI_GREEN} WATCHED", "watched", "No Watched Low-Sec system."),
+    (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched Low-Sec system."),
 )
 
 

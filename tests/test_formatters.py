@@ -145,8 +145,8 @@ def _snapshot() -> dict:
                         "name": "Agoze",
                         "serviceType": "LowSec",
                         "securityDisplay": "0.2",
-                        "level": "hot",
-                        "label": "Hot",
+                        "level": "flashpoint",
+                        "label": "Flashpoint",
                         "shipKillsLastHour": 12,
                         "lastSyncedAt": "2026-04-29T08:00:00+00:00",
                         "topGate": {"name": "Clear", "killsLastHour": 0},
@@ -395,15 +395,14 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Nourvukaiken (3)" in panels[3].embed.fields[0].value
     assert panels[3].embed.fields[1].name == "\U0001F7E0 FLASHPOINT"
     assert "Ahbazon" in panels[3].embed.fields[1].value
+    assert "Agoze" in panels[3].embed.fields[1].value
     assert "FLASH" in panels[3].embed.fields[1].value
-    assert panels[3].embed.fields[2].name == "\U0001F7E1 HOT"
-    assert "Agoze" in panels[3].embed.fields[2].value
-    assert "HOT" in panels[3].embed.fields[2].value
-    assert panels[3].embed.fields[3].name == "\U0001F7E2 WATCHED"
-    assert "Abune" in panels[3].embed.fields[3].value
-    assert "WATCH" in panels[3].embed.fields[3].value
-    assert "SOURCE" in panels[3].embed.fields[4].name
-    assert "Last API update: `08:00 EVE`" in panels[3].embed.fields[4].value
+    assert panels[3].embed.fields[2].name == "\U0001F7E1 WATCHED"
+    assert "Abune" in panels[3].embed.fields[2].value
+    assert "WATCH" in panels[3].embed.fields[2].value
+    assert "HOT" not in " ".join(field.name for field in panels[3].embed.fields)
+    assert "SOURCE" in panels[3].embed.fields[3].name
+    assert "Last API update: `08:00 EVE`" in panels[3].embed.fields[3].value
     assert "SAFE" not in " ".join(field.value for field in panels[3].embed.fields)
     assert "STABLE" not in " ".join(field.name for field in panels[3].embed.fields)
     assert "pod" not in " ".join(
