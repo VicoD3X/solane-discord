@@ -10,7 +10,7 @@
 the main visible product surface and acts as a daily EVE risk intel cockpit.
 
 It publishes clean, persistent Discord embeds for route risk, control boards,
-corruption watch and service status.
+corruption watch and service status, plus private Solane Road route commands.
 
 SOLANE API is intentionally a thin public client. The private Solane Engine
 service remains the source of truth for ESI, zKillboard, route risk, corruption
@@ -35,6 +35,7 @@ EVE ESI / zKillboard / CCP web
 - Control boards for selected HighSec pipes, Pochven systems, active LowSec / NPC nullsec systems and top gatekill pressure.
 - Insurgency LVL4/LVL5 watch.
 - Service board for Solane Engine and Tranquility status.
+- Private `/create-road` command with guided pickup/destination route intel.
 - Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
 - Docker-ready deployment for the Solane Run VPS network.
 
@@ -58,6 +59,12 @@ must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 | `Solane Risk / NS NPC Control` | Active NPC nullsec systems from watched status upward, with kills/h and hot gate intel. |
 | `Solane Risk / Insurgency Watch` | LVL5 and LVL4 corruption systems from Solane Engine. |
 | `Solane Engine ETA` | Solane Engine state, Tranquility status and ESI feed indicators. |
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `/create-road` | Private guided Solane Road route intel with jumps, traffic flow, Critical systems and hot gates. |
 
 ## Repository Boundary
 

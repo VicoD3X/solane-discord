@@ -4,9 +4,11 @@ import asyncio
 import logging
 
 import discord
+from discord import app_commands
 
 from .config import Settings
 from .formatters import PanelMessage, build_panels
+from .road import create_road_command
 from .solane_api import SolaneApi
 from .state import BotState, MessageRecord
 
@@ -21,7 +23,10 @@ class SolaneAIBot(discord.Client):
         self.settings = settings
         self.state = BotState.load(settings.state_path)
         self.api = SolaneApi(settings.solane_api_base_url, settings.solane_bot_api_key)
+        self.tree = app_commands.CommandTree(self)
+        self.tree.add_command(create_road_command(self.api))
         self._worker: asyncio.Task[None] | None = None
+        self._commands_synced = False
 
     async def setup_hook(self) -> None:
         self._worker = asyncio.create_task(self._poll_forever(), name="solane-ai-poller")
@@ -34,6 +39,19 @@ class SolaneAIBot(discord.Client):
 
     async def on_ready(self) -> None:
         LOGGER.info("SOLANE API connected as %s (%s)", self.user, self.user.id if self.user else "unknown")
+        if not self._commands_synced:
+            await self._sync_commands()
+            self._commands_synced = True
+
+    async def _sync_commands(self) -> None:
+        if not self.guilds:
+            synced = await self.tree.sync()
+            LOGGER.info("Synced %s SOLANE API global commands", len(synced))
+            return
+        for guild in self.guilds:
+            self.tree.copy_global_to(guild=guild)
+            synced = await self.tree.sync(guild=guild)
+            LOGGER.info("Synced %s SOLANE API commands for guild %s", len(synced), guild.id)
 
     async def _poll_forever(self) -> None:
         await self.wait_until_ready()

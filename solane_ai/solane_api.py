@@ -39,6 +39,30 @@ class SolaneApi:
     async def route_intel_overview(self) -> dict[str, Any]:
         return await self._get("/api/route-intel/overview")
 
+    async def search_systems(self, query: str, limit: int = 12) -> list[dict[str, Any]]:
+        response = await self._client.get("/api/eve/systems", params={"q": query, "limit": limit})
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, list):
+            raise ValueError("Unexpected payload for /api/eve/systems")
+        return [item for item in payload if isinstance(item, dict)]
+
+    async def road_overview(
+        self,
+        origin_id: int,
+        destination_id: int,
+        flag: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"originId": origin_id, "destinationId": destination_id}
+        if flag:
+            params["flag"] = flag
+        response = await self._client.get("/api/engine/road/overview", params=params)
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("Unexpected payload for /api/engine/road/overview")
+        return payload
+
     async def bot_intel_summary(self) -> dict[str, Any] | None:
         try:
             return await self._get("/api/bot/intel-summary")
