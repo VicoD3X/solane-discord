@@ -26,8 +26,8 @@ CONTROL_GROUPS = (
 
 HIGHSEC_GLOBAL_GROUPS = (
     (f"{EMOJI_RED} CRITICAL", "critical", "No Critical HighSec system."),
+    (f"{EMOJI_ORANGE} FLASHPOINT", "flashpoint", "No Flashpoint HighSec system."),
     (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched HighSec system."),
-    (f"{EMOJI_GREEN} STABLE", "stable", "No Stable HighSec signal listed."),
 )
 
 LOWSEC_GROUPS = (

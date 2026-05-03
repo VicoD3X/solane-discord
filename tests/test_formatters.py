@@ -52,6 +52,17 @@ def _snapshot() -> dict:
                         "name": "Sivala",
                         "serviceType": "HighSec",
                         "securityDisplay": "0.6",
+                        "level": "flashpoint",
+                        "label": "Flashpoint",
+                        "shipKillsLastHour": 12,
+                        "lastSyncedAt": "2026-04-29T08:00:00+00:00",
+                        "topGate": {"name": "Clear", "killsLastHour": 0},
+                    },
+                    {
+                        "id": 30002771,
+                        "name": "Ikao",
+                        "serviceType": "HighSec",
+                        "securityDisplay": "0.6",
                         "level": "watched",
                         "label": "Watched",
                         "shipKillsLastHour": 8,
@@ -423,12 +434,15 @@ def test_build_panels_from_route_intel_snapshot() -> None:
     assert "Uedama" in highsec.embed.fields[0].value
     assert "CRIT" in highsec.embed.fields[0].value
     assert "Tama (2)" in highsec.embed.fields[0].value
-    assert highsec.embed.fields[1].name == "\U0001F7E1 WATCHED"
+    assert highsec.embed.fields[1].name == "\U0001F7E0 FLASHPOINT"
     assert "Sivala" in highsec.embed.fields[1].value
-    assert "WATCH" in highsec.embed.fields[1].value
-    assert highsec.embed.fields[2].name == "\U0001F7E2 STABLE"
-    assert "No Stable HighSec signal listed." in highsec.embed.fields[2].value
+    assert "FLASH" in highsec.embed.fields[1].value
+    assert highsec.embed.fields[2].name == "\U0001F7E1 WATCHED"
+    assert "Ikao" in highsec.embed.fields[2].value
+    assert "WATCH" in highsec.embed.fields[2].value
     assert "SOURCE" in highsec.embed.fields[3].name
+    assert "STABLE" not in " ".join(field.name for field in highsec.embed.fields)
+    assert "SAFE" not in " ".join(field.value for field in highsec.embed.fields)
     assert "pod" not in _panel_text(highsec).lower()
 
     pipes = by_key["pipes"]
