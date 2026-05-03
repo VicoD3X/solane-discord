@@ -63,6 +63,34 @@ class SolaneApi:
             raise ValueError("Unexpected payload for /api/engine/road/overview")
         return payload
 
+    async def road_compare(self, origin_id: int, destination_id: int) -> dict[str, Any]:
+        return await self._get(
+            "/api/engine/road/compare",
+            params={"originId": origin_id, "destinationId": destination_id},
+        )
+
+    async def focus_system(self, system_id: int) -> dict[str, Any]:
+        return await self._get(f"/api/engine/focus/{system_id}")
+
+    async def road_avoids(self) -> dict[str, Any]:
+        return await self._get("/api/engine/road/avoids")
+
+    async def add_road_avoid(self, system_id: int) -> dict[str, Any]:
+        response = await self._client.post("/api/engine/road/avoids", json={"systemId": system_id})
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("Unexpected payload for /api/engine/road/avoids")
+        return payload
+
+    async def remove_road_avoid(self, system_id: int) -> dict[str, Any]:
+        response = await self._client.delete(f"/api/engine/road/avoids/{system_id}")
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("Unexpected payload for /api/engine/road/avoids")
+        return payload
+
     async def bot_intel_summary(self) -> dict[str, Any] | None:
         try:
             return await self._get("/api/bot/intel-summary")
@@ -107,8 +135,8 @@ class SolaneApi:
             "errors": errors,
         }
 
-    async def _get(self, path: str) -> dict[str, Any]:
-        response = await self._client.get(path)
+    async def _get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        response = await self._client.get(path, params=params)
         response.raise_for_status()
         payload = response.json()
         if not isinstance(payload, dict):

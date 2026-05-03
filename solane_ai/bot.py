@@ -8,7 +8,14 @@ from discord import app_commands
 
 from .config import Settings
 from .formatters import PanelMessage, build_panels
-from .road import create_road_command
+from .road import (
+    create_focus_system_command,
+    create_road_avoid_group,
+    create_road_command,
+    create_road_compare_command,
+    create_road_refresh_command,
+    create_road_watch_command,
+)
 from .solane_api import SolaneApi
 from .state import BotState, MessageRecord
 
@@ -24,7 +31,12 @@ class SolaneAIBot(discord.Client):
         self.state = BotState.load(settings.state_path)
         self.api = SolaneApi(settings.solane_api_base_url, settings.solane_bot_api_key)
         self.tree = app_commands.CommandTree(self)
-        self.tree.add_command(create_road_command(self.api))
+        self.tree.add_command(create_road_command(self.api, self.state, self.settings.state_path))
+        self.tree.add_command(create_road_refresh_command(self.api, self.state, self.settings.state_path))
+        self.tree.add_command(create_road_compare_command(self.api, self.state, self.settings.state_path))
+        self.tree.add_command(create_road_watch_command(self.api, self.state, self.settings.state_path))
+        self.tree.add_command(create_focus_system_command(self.api))
+        self.tree.add_command(create_road_avoid_group(self.api))
         self._worker: asyncio.Task[None] | None = None
         self._commands_synced = False
 

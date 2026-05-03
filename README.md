@@ -35,7 +35,8 @@ EVE ESI / zKillboard / CCP web
 - Control boards for selected HighSec pipes, Pochven systems, active LowSec / NPC nullsec systems and top gatekill pressure.
 - Insurgency LVL4/LVL5 watch.
 - Service board for Solane Engine and Tranquility status.
-- Private `/create-road` command with guided pickup/destination route intel.
+- Private Solane Road commands for route creation, refresh, compare, watch and global avoids.
+- Private Solane Focus command for fast single-system scans.
 - Public-safe implementation with no Discord token, private ESI credentials, or route-risk engine.
 - Docker-ready deployment for the Solane Run VPS network.
 
@@ -65,6 +66,11 @@ must not duplicate risk, corruption, gate-kill, pricing or restriction logic.
 | Command | Purpose |
 | --- | --- |
 | `/create-road` | Private guided Solane Road route intel with jumps, traffic flow, Critical systems and hot gates. |
+| `/road-refresh` | Refresh one of the user's five recent routes. |
+| `/road-compare` | Compare secure, shortest and insecure route options from Solane Engine. |
+| `/road-watch` | Watch a route in the current channel and alert on route-risk changes. |
+| `/road-avoid list/add/remove` | List or modify global Solane Road avoid systems in Solane Engine. |
+| `/focus-system` | Private Solane Focus single-system scan with fast gatekill intel. |
 
 ## Repository Boundary
 
@@ -181,9 +187,9 @@ docker compose build
 
 ## Runtime State
 
-SOLANE API stores Discord message IDs in `data/solane-ai-state.json` so it can
-edit existing panels instead of posting duplicates. The `data/` directory is
-ignored by Git.
+SOLANE API stores Discord message IDs and recent per-user Road routes in
+`data/solane-ai-state.json` so it can edit existing panels and power
+`/road-refresh`. The `data/` directory is ignored by Git.
 
 ## Suggested GitHub Topics
 
