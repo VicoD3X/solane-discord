@@ -6,6 +6,7 @@ from typing import Any
 import discord
 
 PANEL_HIGHSEC_CONTROL = 0x79AE6F
+PANEL_HIGHSEC_GLOBAL_CONTROL = 0x2FA084
 PANEL_POCHVEN_CONTROL = 0xAE2448
 PANEL_LOWSEC_CONTROL = 0xFF653F
 PANEL_NSNPC_CONTROL = 0x8100D1
@@ -21,6 +22,12 @@ CONTROL_GROUPS = (
     (f"{EMOJI_RED} CRITICAL", "critical", "No Critical pipe."),
     (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched pipe."),
     (f"{EMOJI_GREEN} STABLE", "stable", "No Stable pipe."),
+)
+
+HIGHSEC_GLOBAL_GROUPS = (
+    (f"{EMOJI_RED} CRITICAL", "critical", "No Critical HighSec system."),
+    (f"{EMOJI_YELLOW} WATCHED", "watched", "No Watched HighSec system."),
+    (f"{EMOJI_GREEN} STABLE", "stable", "No Stable HighSec signal listed."),
 )
 
 LOWSEC_GROUPS = (
@@ -45,6 +52,18 @@ def build_pipes_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
         color=PANEL_HIGHSEC_CONTROL,
         groups=CONTROL_GROUPS,
         first_column="PIPE",
+    )
+
+
+def build_highsec_control_embed(snapshot: dict[str, Any]) -> discord.Embed:
+    return _build_control_embed(
+        snapshot,
+        title="SOLANE RISK / HIGHSEC CONTROL",
+        description="Global active HighSec control board from Solane Engine.",
+        feed_key="highSecControlSystems",
+        color=PANEL_HIGHSEC_GLOBAL_CONTROL,
+        groups=HIGHSEC_GLOBAL_GROUPS,
+        first_column="SYSTEM",
     )
 
 

@@ -9,6 +9,7 @@ import discord
 
 from .panels.engine_eta import build_engine_eta_embed
 from .panels.pipes_control import (
+    build_highsec_control_embed,
     build_lowsec_control_embed,
     build_nsnpc_control_embed,
     build_pipes_control_embed,
@@ -47,6 +48,7 @@ class PanelMessage:
 def build_panels(snapshot: dict[str, Any]) -> list[PanelMessage]:
     return [
         PanelMessage("risk", "SOLANE RISK / GLOBAL WATCH", build_solane_risk_embed(snapshot)),
+        PanelMessage("highsec", "SOLANE RISK / HIGHSEC CONTROL", build_highsec_control_embed(snapshot)),
         PanelMessage("pipes", "SOLANE RISK / PIPES CONTROL", build_pipes_control_embed(snapshot)),
         PanelMessage("pochven", "SOLANE RISK / POCHVEN CONTROL", build_pochven_control_embed(snapshot)),
         PanelMessage("lowsec", "SOLANE RISK / LOW-SEC CONTROL", build_lowsec_control_embed(snapshot)),
